@@ -1,6 +1,7 @@
 import { Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { navigation } from '../../data/navigation'
+import { PixelFill } from '../ui/PixelFill'
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -28,7 +29,8 @@ export function Header() {
       </nav>
 
       <a className="header-cta" href="#contato">
-        Fale conosco
+        <PixelFill />
+        <span>Fale conosco</span>
       </a>
 
       <button
@@ -49,7 +51,8 @@ export function Header() {
           </a>
         ))}
         <a href="#contato" className="mobile-cta" onClick={() => setIsOpen(false)}>
-          Fale conosco
+          <PixelFill />
+          <span>Fale conosco</span>
         </a>
       </div>
     </header>

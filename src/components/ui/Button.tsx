@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import { PixelFill } from './PixelFill'
 
 type ButtonProps = {
   children: string
@@ -9,6 +10,7 @@ type ButtonProps = {
 export function Button({ children, href = '#contato', variant = 'primary' }: ButtonProps) {
   return (
     <a className={`button button--${variant}`} href={href}>
+      <PixelFill />
       <span>{children}</span>
       <ArrowRight aria-hidden="true" size={18} />
     </a>

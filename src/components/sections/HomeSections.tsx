@@ -13,12 +13,22 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { useHeroProgress } from '../../hooks/useHeroProgress'
+import { useScrollLock } from '../../hooks/useScrollLock'
+import { useSequentialTyping } from '../../hooks/useSequentialTyping'
 import { projects } from '../../data/projects'
 import { services, type Service } from '../../data/services'
 import { team } from '../../data/team'
 import { Button } from '../ui/Button'
+import { PixelFill } from '../ui/PixelFill'
 import { SectionTitle } from '../ui/SectionTitle'
+import { TypedText } from '../ui/TypedText'
+
+// three.js sai do bundle principal: o texto do hero pinta antes da cena carregar
+const HeroLogo3D = lazy(() =>
+  import('../three/HeroLogo3D').then((module) => ({ default: module.HeroLogo3D })),
+)
 
 const serviceIcons: Record<Service['icon'], LucideIcon> = {
   globe: Globe2,
@@ -56,41 +66,89 @@ const differentials = [
   },
 ]
 
-export function Hero() {
-  return (
-    <section className="hero-section" id="inicio">
-      <div className="container hero-grid">
-        <div className="hero-copy reveal">
-          <p className="eyebrow">TechForge</p>
-          <h1>
-            <span>Software</span>
-            <span>que</span>
-            <span>estrutura</span>
-            <span>ideias.</span>
-          </h1>
-          <p>
-            Engenharia de software para empresas que precisam transformar processos em soluções
-            digitais claras, estáveis e preparadas para evoluir.
-          </p>
-          <div className="hero-actions">
-            <Button href="#contato">Iniciar projeto</Button>
-            <Button href="#solucoes" variant="ghost">
-              Ver soluções
-            </Button>
-          </div>
-        </div>
+// blocos digitados na ordem; os arrays são constantes porque o hook depende deles
+const HERO_BLOCKS = [
+  'TechForge',
+  'Software que',
+  'estrutura ideias.',
+  'Engenharia de software para empresas que precisam transformar processos em soluções digitais claras, estáveis e preparadas para evoluir.',
+]
+const HERO_SPEEDS = [34, 46, 46, 9]
 
-        <div className="hero-visual reveal" aria-label="Composição visual TechForge">
-          <div className="material-frame">
-            <div className="material-frame__image">
-              <img src="/assets/techforge-symbol.png" alt="" />
-            </div>
-            <div className="material-frame__meta">
-              <span>TechForge</span>
-              <strong>Código com propósito.</strong>
-            </div>
-          </div>
-        </div>
+function HeroCopy({
+  revealed,
+  onTypingChange,
+}: {
+  revealed: boolean
+  onTypingChange: (done: boolean) => void
+}) {
+  const { slices, caretIndex, done } = useSequentialTyping(HERO_BLOCKS, HERO_SPEEDS, revealed)
+
+  // só o fim da digitação sobe para o Hero — os ~180 re-renders da escrita
+  // ficam contidos aqui e não passam pelo <Canvas>
+  useEffect(() => {
+    onTypingChange(done)
+  }, [done, onTypingChange])
+
+  return (
+    <div className="container hero-copy">
+      <p className="eyebrow">
+        <TypedText text={HERO_BLOCKS[0]} visible={slices[0]} caret={caretIndex === 0} />
+      </p>
+      <h1>
+        <span>
+          <TypedText text={HERO_BLOCKS[1]} visible={slices[1]} caret={caretIndex === 1} />
+        </span>
+        <span>
+          <TypedText text={HERO_BLOCKS[2]} visible={slices[2]} caret={caretIndex === 2} />
+        </span>
+      </h1>
+      <p>
+        <TypedText text={HERO_BLOCKS[3]} visible={slices[3]} caret={caretIndex === 3} />
+      </p>
+      <div className={`hero-actions ${done ? 'is-typed' : ''}`}>
+        <Button href="#contato">Iniciar projeto</Button>
+        <Button href="#solucoes" variant="ghost">
+          Ver soluções
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const HERO_REVEAL_AT = 0.85
+
+export function Hero() {
+  const sectionRef = useRef<HTMLElement>(null)
+  const [typingDone, setTypingDone] = useState(false)
+  // texto e header só entram depois que o logo já assentou no meio da tela
+  const { progress, revealed } = useHeroProgress(sectionRef, HERO_REVEAL_AT)
+
+  // trava exatamente no ponto do gatilho, mesmo que um flick tenha passado dele
+  const lockAnchor = useCallback(() => {
+    const section = sectionRef.current
+    if (!section) return window.scrollY
+    const top = section.getBoundingClientRect().top + window.scrollY
+    const distance = Math.max(section.offsetHeight - window.innerHeight, 1)
+    return Math.min(window.scrollY, top + HERO_REVEAL_AT * distance + 8)
+  }, [])
+
+  // o scroll só volta a andar quando a última linha termina de ser escrita
+  useScrollLock(revealed && !typingDone, lockAnchor)
+
+  return (
+    <section className="hero-section" id="inicio" ref={sectionRef}>
+      <div className="hero-stage">
+        <div className="hero-background" aria-hidden="true" />
+        <Suspense fallback={null}>
+          <HeroLogo3D progress={progress} revealed={revealed} />
+        </Suspense>
+
+        <HeroCopy revealed={revealed} onTypingChange={setTypingDone} />
+
+        <span className="hero-scroll-hint" aria-hidden="true">
+          Role para revelar
+        </span>
       </div>
     </section>
   )
@@ -433,8 +491,9 @@ export function Contact() {
           </label>
 
           <button type="submit" className="submit-button">
+            <PixelFill />
             <Send aria-hidden="true" size={18} />
-            Conferir dados
+            <span>Conferir dados</span>
           </button>
 
           {status === 'ready' ? (

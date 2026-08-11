@@ -10,6 +10,12 @@
   --muted-2: #6f7075;
   --steel-blue: #1e3a5f;
   --steel-blue-light: #315a89;
+  --accent-blue: #2f7bff;
+  /* fase do hero: 0 -> 1 ao longo do trilho de scroll da seção */
+  --hero-progress: 0;
+  /* fase 2: 0 -> 1 conforme texto e header entram, depois que o logo assentou.
+     Rampa curta de propósito: quem faz a revelação é a digitação, não o fade. */
+  --copy-in: clamp(0, calc((var(--hero-progress) - 0.79) * 16), 1);
   --line: rgba(245, 245, 245, 0.12);
   --line-dark: rgba(18, 18, 20, 0.12);
   --surface-light: #efefed;
@@ -37,6 +43,13 @@
 
 html {
   scroll-behavior: smooth;
+  /* barra de scroll escondida: a rolagem continua normal, só sem a barra visível */
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 body {
@@ -102,10 +115,17 @@ img {
   border-bottom: 1px solid transparent;
   background: rgba(18, 18, 20, 0.76);
   backdrop-filter: blur(10px);
+  /* o header entra junto com o texto do hero, não antes */
+  opacity: var(--copy-in);
+  transform: translateY(calc((1 - var(--copy-in)) * -18px));
   transition:
     background var(--duration) ease,
     border-color var(--duration) ease,
     min-height var(--duration) ease;
+}
+
+html:not(.is-hero-revealed) .site-header {
+  pointer-events: none;
 }
 
 .site-header--scrolled,
@@ -170,6 +190,8 @@ img {
   gap: 10px;
   min-height: 44px;
   padding: 0 18px;
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--steel-blue-light);
   border-radius: var(--radius-sm);
   background: transparent;
@@ -177,25 +199,98 @@ img {
   font-size: 0.82rem;
   font-weight: 800;
   text-transform: uppercase;
+  /* a cor do hover não é mais interpolada: quem pinta é a grade de .pixel-fill */
+  --pixel-color: var(--steel-blue-light);
+  --pixel-label: #ffffff;
+  /* o rótulo clareia depois que a grade já cobriu boa parte do botão */
   transition:
-    background var(--duration) ease,
     border-color var(--duration) ease,
-    color var(--duration) ease,
+    color 100ms linear 150ms,
     transform var(--duration) ease;
 }
 
+.button:hover,
 .header-cta:hover,
 .mobile-cta:hover,
+.submit-button:hover,
+.button:focus-visible,
+.header-cta:focus-visible,
+.mobile-cta:focus-visible,
+.submit-button:focus-visible {
+  color: var(--pixel-label);
+}
+
 .button--primary,
 .submit-button {
   background: var(--steel-blue);
+}
+
+.header-cta,
+.mobile-cta {
+  --pixel-color: var(--steel-blue);
 }
 
 .button:hover,
 .submit-button:hover {
   transform: translateY(-1px);
   border-color: var(--steel-blue-light);
-  background: var(--steel-blue-light);
+}
+
+/* grade que preenche o botão bloco a bloco, em ordem sorteada (ver PixelFill) */
+.pixel-fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* as células nunca afetam nada fora daqui */
+  contain: layout paint;
+}
+
+.pixel-fill__cell {
+  position: absolute;
+  background: var(--pixel-color);
+  opacity: 0;
+  transform: scale(0.35);
+  /* --enter e --leave vêm do hash da posição (ver PixelFill.tsx) */
+  transition:
+    opacity 80ms linear var(--leave),
+    transform 80ms linear var(--leave);
+}
+
+:is(.button, .header-cta, .mobile-cta, .submit-button):hover .pixel-fill__cell,
+:is(.button, .header-cta, .mobile-cta, .submit-button):focus-visible .pixel-fill__cell {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: var(--enter);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* sem o ruído: a cor entra de uma vez, mas o feedback de hover continua */
+  .pixel-fill__cell {
+    transform: none;
+    transition: none;
+  }
+
+  :is(.button, .header-cta, .mobile-cta, .submit-button):hover .pixel-fill__cell,
+  :is(.button, .header-cta, .mobile-cta, .submit-button):focus-visible .pixel-fill__cell {
+    transition-delay: 0s;
+  }
+
+  .button,
+  .header-cta,
+  .mobile-cta,
+  .submit-button {
+    transition: none;
+  }
+}
+
+/* o conteúdo tem que ficar acima da grade */
+.button > :not(.pixel-fill),
+.header-cta > :not(.pixel-fill),
+.mobile-cta > :not(.pixel-fill),
+.submit-button > :not(.pixel-fill) {
+  position: relative;
+  z-index: 1;
 }
 
 .button svg,
@@ -220,11 +315,9 @@ img {
   background: var(--white);
   border-color: var(--white);
   color: var(--graphite);
-}
-
-.button--light:hover {
-  background: var(--surface-light);
-  color: var(--graphite);
+  --pixel-color: var(--surface-light);
+  /* fundo claro: o rótulo não tem para onde clarear */
+  --pixel-label: var(--graphite);
 }
 
 .menu-toggle {
@@ -244,33 +337,116 @@ img {
 }
 
 .hero-section {
+  /* altura extra = trilho de scroll que conduz a queda do logo 3D */
   position: relative;
-  min-height: 82svh;
-  padding: 118px 0 var(--space-xl);
-  overflow: hidden;
-  background:
-    linear-gradient(90deg, rgba(18, 18, 20, 0.98), rgba(18, 18, 20, 0.9) 58%, rgba(30, 58, 95, 0.2)),
-    var(--graphite);
+  min-height: 340svh;
+  background: var(--graphite);
 }
 
-.hero-section::before {
+.hero-stage {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100svh;
+  padding-bottom: clamp(40px, 7vh, 84px);
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  inset: -2%;
+  z-index: 0;
+  background: url('/assets/hero-background.webp') center / cover no-repeat var(--graphite);
+  transform: scale(calc(1 + var(--hero-progress) * 0.07));
+  transform-origin: 60% 40%;
+}
+
+.hero-stage::before {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(245, 245, 245, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 245, 245, 0.045) 1px, transparent 1px);
+    linear-gradient(rgba(245, 245, 245, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 245, 245, 0.035) 1px, transparent 1px);
   background-size: 96px 96px;
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 76%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 62%);
   content: '';
 }
 
-.hero-grid {
-  position: relative;
+.hero-stage::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(18, 18, 20, 0.5) 0%, rgba(18, 18, 20, 0) 30%, rgba(18, 18, 20, 0.86) 78%),
+    linear-gradient(90deg, rgba(18, 18, 20, 0.6), rgba(18, 18, 20, 0) 55%);
+  content: '';
+}
+
+/**
+ * Assim que o canvas está pintando, as três camadas acima saem: o shader já
+ * desenha a imagem, a grade e os degradês. Mantê-las era compor três camadas de
+ * tela cheia por quadro — invisíveis sob o canvas opaco — e ainda recalcular o
+ * scale de .hero-background a cada frame de scroll. Elas continuam existindo
+ * para o carregamento e para quem não tem WebGL.
+ */
+.has-hero-webgl .hero-background,
+.has-hero-webgl .hero-stage::before,
+.has-hero-webgl .hero-stage::after {
+  display: none;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-canvas--fallback {
   display: grid;
-  grid-template-columns: minmax(0, 0.58fr) minmax(340px, 0.42fr);
-  gap: clamp(40px, 6vw, 88px);
-  align-items: center;
+  place-items: center;
+}
+
+.hero-canvas--fallback img {
+  width: min(280px, 46vw);
+  opacity: 0.86;
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  right: var(--page-pad);
+  bottom: clamp(18px, 3vh, 32px);
+  z-index: 3;
+  color: var(--muted-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: calc(1 - var(--copy-in));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-section {
+    min-height: 100svh;
+  }
+
+  .hero-copy,
+  .site-header,
+  html:not(.is-hero-revealed) .hero-copy,
+  html:not(.is-hero-revealed) .site-header {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .hero-scroll-hint {
+    display: none;
+  }
 }
 
 .hero-copy,
@@ -310,10 +486,83 @@ h3 {
   text-wrap: balance;
 }
 
+.hero-copy {
+  position: relative;
+  z-index: 3;
+  opacity: var(--copy-in);
+  transform: translateY(calc((1 - var(--copy-in)) * 18px));
+}
+
+html:not(.is-hero-revealed) .hero-copy {
+  pointer-events: none;
+}
+
+/* Digitação: a camada fantasma reserva o espaço final do texto */
+.typed {
+  position: relative;
+  display: inline-block;
+}
+
+.typed__ghost {
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.typed__visible {
+  position: absolute;
+  inset: 0;
+}
+
+.typed__caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.86em;
+  margin-left: 0.08em;
+  translate: 0 0.1em;
+  background: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(47, 123, 255, 0.6);
+  animation: caret-blink 1.05s steps(1, end) infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* botões entram só quando a última linha termina de ser escrita */
+.hero-actions {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition:
+    opacity 420ms ease,
+    transform 420ms ease;
+}
+
+.hero-actions.is-typed {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typed__caret {
+    display: none;
+  }
+}
+
 .hero-copy h1 {
   max-width: 720px;
-  font-size: clamp(3rem, 6vw, 6rem);
-  line-height: 1.02;
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  line-height: 1.04;
   text-transform: uppercase;
 }
 
@@ -342,72 +591,6 @@ h3 {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: var(--space-lg);
-}
-
-.hero-visual {
-  min-height: 460px;
-}
-
-.material-frame {
-  position: relative;
-  display: grid;
-  min-height: 460px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(245, 245, 245, 0.08), transparent 38%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    #151517;
-  background-size: auto, 64px 64px, auto;
-}
-
-.material-frame::before {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(120deg, transparent 0 38%, rgba(30, 58, 95, 0.72) 38% 48%, transparent 48%),
-    linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.34));
-  content: '';
-}
-
-.material-frame__image {
-  position: relative;
-  display: grid;
-  place-items: center;
-  padding: var(--space-xl);
-}
-
-.material-frame__image img {
-  width: min(300px, 72%);
-  opacity: 0.84;
-}
-
-.material-frame__meta {
-  position: relative;
-  align-self: end;
-  padding: var(--space-md);
-  border-top: 1px solid var(--line);
-  background: rgba(18, 18, 20, 0.84);
-}
-
-.material-frame__meta span {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--steel-blue-light);
-  font-size: 0.78rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.material-frame__meta strong {
-  display: block;
-  max-width: 24ch;
-  color: var(--white-soft);
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 2.2vw, 2.25rem);
-  line-height: 1.1;
-  text-transform: uppercase;
 }
 
 .positioning {
@@ -1000,7 +1183,6 @@ textarea:focus {
     gap: 16px;
   }
 
-  .hero-grid,
   .positioning__grid,
   .about-grid,
   .contact-grid {
@@ -1008,12 +1190,7 @@ textarea:focus {
   }
 
   .hero-section {
-    min-height: auto;
-  }
-
-  .hero-visual,
-  .material-frame {
-    min-height: 380px;
+    min-height: 300svh;
   }
 
   .section-title {
@@ -1087,12 +1264,8 @@ textarea:focus {
     color: var(--white);
   }
 
-  .hero-section {
-    padding-top: 104px;
-  }
-
   .hero-copy h1 {
-    font-size: clamp(2.25rem, 9.7vw, 3.45rem);
+    font-size: clamp(2.1rem, 8.4vw, 3rem);
   }
 
   .hero-copy > p {
@@ -1165,24 +1338,17 @@ textarea:focus {
   }
 
   .hero-section {
-    padding-bottom: var(--space-xl);
-  }
-
-  .hero-grid {
-    gap: var(--space-lg);
+    min-height: 260svh;
   }
 
   .hero-copy,
   .hero-actions,
-  .hero-visual,
-  .material-frame,
   .positioning__grid,
   .section-title {
     max-width: calc(100vw - 40px);
   }
 
-  .hero-actions,
-  .material-frame {
+  .hero-actions {
     width: calc(100vw - 64px);
     max-width: calc(100vw - 64px);
   }
@@ -1208,11 +1374,6 @@ textarea:focus {
     max-width: 33ch;
   }
 
-  .material-frame__meta strong {
-    max-width: 14ch;
-    font-size: clamp(1.18rem, 5.4vw, 1.45rem);
-  }
-
   .positioning h2 {
     max-width: 13ch;
   }
@@ -1230,19 +1391,6 @@ textarea:focus {
 
   .hero-actions {
     display: grid;
-  }
-
-  .hero-visual,
-  .material-frame {
-    min-height: 300px;
-  }
-
-  .material-frame__image {
-    padding: var(--space-md);
-  }
-
-  .material-frame__image img {
-    width: min(210px, 66%);
   }
 
   .positioning__grid {
@@ -1288,8 +1436,6 @@ textarea:focus {
 @media (max-width: 360px) {
   .hero-copy,
   .hero-actions,
-  .hero-visual,
-  .material-frame,
   .positioning__grid,
   .section-title {
     width: calc(100vw - 72px);
@@ -1297,7 +1443,7 @@ textarea:focus {
   }
 
   .hero-copy h1 {
-    font-size: 2.35rem;
+    font-size: 2.05rem;
   }
 
   .hero-copy > p,
