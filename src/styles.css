@@ -209,10 +209,15 @@ html:not(.is-hero-revealed) .site-header {
     transform var(--duration) ease;
 }
 
-.button:hover,
-.header-cta:hover,
-.mobile-cta:hover,
-.submit-button:hover,
+@media (hover: hover) {
+  .button:hover,
+  .header-cta:hover,
+  .mobile-cta:hover,
+  .submit-button:hover {
+    color: var(--pixel-label);
+  }
+}
+
 .button:focus-visible,
 .header-cta:focus-visible,
 .mobile-cta:focus-visible,
@@ -230,10 +235,12 @@ html:not(.is-hero-revealed) .site-header {
   --pixel-color: var(--steel-blue);
 }
 
-.button:hover,
-.submit-button:hover {
-  transform: translateY(-1px);
-  border-color: var(--steel-blue-light);
+@media (hover: hover) {
+  .button:hover,
+  .submit-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--steel-blue-light);
+  }
 }
 
 /* grade que preenche o botão bloco a bloco, em ordem sorteada (ver PixelFill) */
@@ -257,7 +264,20 @@ html:not(.is-hero-revealed) .site-header {
     transform 80ms linear var(--leave);
 }
 
-:is(.button, .header-cta, .mobile-cta, .submit-button):hover .pixel-fill__cell,
+/**
+ * O hover fica atrás de `hover: hover` porque em tela de toque não existe sair
+ * do elemento: o navegador emula o hover no toque e ele gruda até o próximo
+ * toque em outro lugar — o botão ficaria preenchido para sempre depois do tap.
+ * O focus-visible fica de fora, é o caminho do teclado.
+ */
+@media (hover: hover) {
+  :is(.button, .header-cta, .mobile-cta, .submit-button):hover .pixel-fill__cell {
+    opacity: 1;
+    transform: scale(1);
+    transition-delay: var(--enter);
+  }
+}
+
 :is(.button, .header-cta, .mobile-cta, .submit-button):focus-visible .pixel-fill__cell {
   opacity: 1;
   transform: scale(1);
@@ -400,6 +420,49 @@ html:not(.is-hero-revealed) .site-header {
   display: none;
 }
 
+/**
+ * Tela de boas-vindas: o que aparece antes de qualquer scroll. Sai já nos
+ * primeiros 7% do trilho — `--hero-progress * 14` chega a 1 em 0.0714 — e o
+ * logo 3D só começa a cair depois disso (FALL_START em HeroLogo3D), então os
+ * dois nunca dividem a tela.
+ */
+.hero-welcome {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--page-pad);
+  pointer-events: none;
+  text-align: center;
+  opacity: calc(1 - clamp(0, var(--hero-progress) * 14, 1));
+  transform: translateY(calc(clamp(0, var(--hero-progress) * 14, 1) * -26px));
+}
+
+.hero-welcome .eyebrow {
+  /* centralizado, o traço do eyebrow precisa dos dois lados */
+  justify-content: center;
+}
+
+.hero-welcome .eyebrow::after {
+  width: 30px;
+  height: 2px;
+  background: var(--steel-blue-light);
+  content: '';
+}
+
+/* mesma escala e tratamento do h1 do hero */
+.hero-welcome__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  font-weight: 800;
+  line-height: 1.04;
+  text-transform: uppercase;
+}
+
 .hero-canvas {
   position: absolute;
   inset: 0;
@@ -430,6 +493,68 @@ html:not(.is-hero-revealed) .site-header {
   opacity: calc(1 - var(--copy-in));
 }
 
+/**
+ * Seta de rolagem, no mesmo canto onde o aviso "Role para revelar" estava: os
+ * dois nunca aparecem juntos — o aviso apaga quando o texto entra, a seta só
+ * acende quando a digitação termina e o scroll é liberado.
+ *
+ * O trilho é um traço fixo; quem se move é só a seta, descendo por ele e
+ * reaparecendo em cima. Animar transform e opacity mantém tudo no compositor.
+ */
+.hero-scroll-arrow {
+  position: absolute;
+  right: var(--page-pad);
+  bottom: clamp(18px, 3vh, 32px);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 68px;
+  color: var(--white-soft);
+  opacity: 0;
+  transition: opacity 520ms ease;
+}
+
+.hero-scroll-arrow::before {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 26px;
+  background: linear-gradient(to bottom, transparent, rgba(245, 245, 245, 0.45));
+  content: '';
+}
+
+.hero-scroll-arrow.is-in {
+  opacity: 1;
+}
+
+.hero-scroll-arrow svg {
+  transform: translateY(-5px);
+}
+
+.hero-scroll-arrow.is-in svg {
+  animation: hero-arrow-drop 1.9s cubic-bezier(0.33, 1, 0.68, 1) infinite;
+}
+
+@keyframes hero-arrow-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-13px);
+  }
+  22% {
+    opacity: 1;
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(8px);
+  }
+  85%,
+  100% {
+    opacity: 0;
+    transform: translateY(13px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-section {
     min-height: 100svh;
@@ -444,8 +569,17 @@ html:not(.is-hero-revealed) .site-header {
     transform: none;
   }
 
-  .hero-scroll-hint {
+  .hero-scroll-hint,
+  /* sem trilho de scroll o hero vira uma tela só, e a saudação ficaria por
+     cima do texto em vez de antes dele */
+  .hero-welcome {
     display: none;
+  }
+
+  /* a seta continua indicando o caminho, mas parada */
+  .hero-scroll-arrow.is-in svg {
+    animation: none;
+    transform: none;
   }
 }
 
@@ -688,13 +822,112 @@ html:not(.is-hero-revealed) .hero-copy {
 }
 
 .service-row {
+  position: relative;
   display: grid;
   grid-template-columns: 70px 38px minmax(180px, 0.34fr) minmax(260px, 1fr) 44px;
   gap: clamp(16px, 3vw, 40px);
   align-items: center;
   min-height: 124px;
-  padding: var(--space-md) 0;
+  /* respiro lateral para o círculo azul não encostar no texto quando cobre */
+  padding: var(--space-md) clamp(14px, 1.6vw, 26px);
   border-bottom: 1px solid var(--line-dark);
+  border-radius: var(--radius-sm);
+  /* recorta o círculo nos limites da linha */
+  overflow: hidden;
+}
+
+/**
+ * A linha também carrega .reveal, que é declarada depois no arquivo e com a
+ * mesma especificidade — ela levava o `transition` e o `transform` inteiros.
+ * Por isso as regras abaixo qualificam as duas classes: é o que faz o zoom do
+ * hover existir em vez de ser sobrescrito pelo translateY do reveal.
+ */
+.service-row.reveal {
+  transition:
+    opacity 520ms ease,
+    transform 620ms cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 620ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/**
+ * O disco azul. Nasce no ponto onde o cursor entrou (--fx / --fy, escritos pelo
+ * markPointer) e cresce até cobrir a linha; ao sair, encolhe de volta para o
+ * ponto por onde o mouse saiu. O raio é a diagonal cheia, então o disco cobre a
+ * linha venha o cursor de onde vier.
+ */
+.service-row__fill {
+  position: absolute;
+  top: var(--fy, 50%);
+  left: var(--fx, 50%);
+  z-index: 0;
+  width: calc(var(--fr, 100%) * 2);
+  height: calc(var(--fr, 100%) * 2);
+  border-radius: 50%;
+  background: var(--steel-blue);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  /* saída: um pouco mais curta que a entrada, com curva simétrica */
+  transition: transform 620ms cubic-bezier(0.37, 0, 0.63, 1);
+}
+
+/* o conteúdo fica acima do disco */
+.service-row > :not(.service-row__fill) {
+  position: relative;
+  z-index: 1;
+}
+
+/* atraso proporcional ao disco: o texto não clareia antes de o azul chegar */
+.service-row .row-number,
+.service-row > svg,
+.service-row h3,
+.service-row p {
+  transition: color 380ms linear 240ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-row__fill,
+  .service-row .row-number,
+  .service-row > svg,
+  .service-row h3,
+  .service-row p {
+    transition: none;
+  }
+}
+
+/**
+ * Só a linha sob o mouse acende. O zoom é discreto de propósito: 1.5% já dá a
+ * leitura de destaque sem empurrar as vizinhas nem borrar o texto. O z-index
+ * põe a linha ampliada acima das outras, senão a de baixo corta a sombra.
+ */
+@media (hover: hover) {
+  .service-row.reveal:hover,
+  .service-row:hover {
+    z-index: 1;
+    /* o translateY é do reveal e precisa ser recomposto, não perdido */
+    transform: translateY(0) scale(1.015);
+    box-shadow: 0 18px 40px rgba(30, 58, 95, 0.26);
+  }
+
+  .service-row:hover .service-row__fill {
+    transform: translate(-50%, -50%) scale(1);
+    /* easeOutCubic: arranca sem estalo e desacelera longo até cobrir */
+    transition: transform 950ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .service-row:hover .row-number,
+  .service-row:hover > svg,
+  .service-row:hover h3 {
+    color: var(--white);
+  }
+
+  .service-row:hover p {
+    color: rgba(245, 245, 245, 0.82);
+  }
+
+  .service-row:hover a {
+    border-color: rgba(245, 245, 245, 0.45);
+    color: var(--white);
+  }
 }
 
 .service-row > svg {
@@ -722,12 +955,8 @@ html:not(.is-hero-revealed) .hero-copy {
   color: var(--steel-blue);
   transition:
     background var(--duration) ease,
+    border-color var(--duration) ease,
     color var(--duration) ease;
-}
-
-.service-row:hover a {
-  background: var(--steel-blue);
-  color: var(--white);
 }
 
 .differential-grid {

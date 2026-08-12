@@ -2,6 +2,7 @@ import {
   ArrowRight,
   BadgeCheck,
   BarChart3,
+  ChevronDown,
   Code2,
   ExternalLink,
   Globe2,
@@ -13,7 +14,16 @@ import {
   Workflow,
   type LucideIcon,
 } from 'lucide-react'
-import { Suspense, lazy, useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type PointerEvent,
+} from 'react'
 import { useHeroProgress } from '../../hooks/useHeroProgress'
 import { useScrollLock } from '../../hooks/useScrollLock'
 import { useSequentialTyping } from '../../hooks/useSequentialTyping'
@@ -29,6 +39,7 @@ import { TypedText } from '../ui/TypedText'
 const HeroLogo3D = lazy(() =>
   import('../three/HeroLogo3D').then((module) => ({ default: module.HeroLogo3D })),
 )
+
 
 const serviceIcons: Record<Service['icon'], LucideIcon> = {
   globe: Globe2,
@@ -140,6 +151,15 @@ export function Hero() {
     <section className="hero-section" id="inicio" ref={sectionRef}>
       <div className="hero-stage">
         <div className="hero-background" aria-hidden="true" />
+
+        {/* primeira tela: sai no primeiro scroll e dá lugar ao logo 3D.
+            O título é um <p> de propósito — o h1 da página é o texto digitado
+            mais abaixo, e dois h1 quebrariam a hierarquia de cabeçalhos. */}
+        <div className="hero-welcome">
+          <p className="eyebrow">Bem-vindo à</p>
+          <p className="hero-welcome__title">TechForge</p>
+        </div>
+
         <Suspense fallback={null}>
           <HeroLogo3D progress={progress} revealed={revealed} />
         </Suspense>
@@ -148,6 +168,14 @@ export function Hero() {
 
         <span className="hero-scroll-hint" aria-hidden="true">
           Role para revelar
+        </span>
+
+        {/* entra quando a digitação acaba e o scroll é destravado */}
+        <span
+          className={`hero-scroll-arrow ${typingDone ? 'is-in' : ''}`}
+          aria-hidden="true"
+        >
+          <ChevronDown size={30} strokeWidth={2.2} />
         </span>
       </div>
     </section>
@@ -169,6 +197,25 @@ export function Positioning() {
   )
 }
 
+/**
+ * Marca na própria linha onde o cursor entrou (ou saiu): o círculo azul nasce
+ * e some nesse ponto. Escreve direto no style do elemento em vez de passar por
+ * state — são seis linhas reagindo a cada movimento do mouse e nada disso
+ * precisa re-renderizar o React.
+ *
+ * O raio é a diagonal cheia da linha, não a distância até o canto mais longe:
+ * assim o círculo cobre a linha a partir de qualquer ponto, e mover o centro na
+ * saída não abre fresta antes de ele encolher.
+ */
+const markPointer = (event: PointerEvent<HTMLElement>) => {
+  const row = event.currentTarget
+  const rect = row.getBoundingClientRect()
+
+  row.style.setProperty('--fx', `${event.clientX - rect.left}px`)
+  row.style.setProperty('--fy', `${event.clientY - rect.top}px`)
+  row.style.setProperty('--fr', `${Math.hypot(rect.width, rect.height)}px`)
+}
+
 export function Services() {
   return (
     <section className="section section--light" id="solucoes">
@@ -184,7 +231,13 @@ export function Services() {
           {services.map((service, index) => {
             const Icon = serviceIcons[service.icon]
             return (
-              <article className="service-row reveal" key={service.title}>
+              <article
+                className="service-row reveal"
+                key={service.title}
+                onPointerEnter={markPointer}
+                onPointerLeave={markPointer}
+              >
+                <span className="service-row__fill" aria-hidden="true" />
                 <span className="row-number">{String(index + 1).padStart(2, '0')}</span>
                 <Icon aria-hidden="true" />
                 <h3>{service.title}</h3>

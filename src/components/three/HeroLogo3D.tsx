@@ -18,6 +18,12 @@ const START_Y = 5.4
 const CENTER_Y = 0
 const RAISED_Y = 1.1
 
+/**
+ * A queda não começa em 0: os primeiros 9% do trilho pertencem à tela de
+ * boas-vindas, que some por volta de 0.071 (ver .hero-welcome no styles.css).
+ * O logo fica parado fora de quadro até lá.
+ */
+const FALL_START = 0.09
 const FALL_END = 0.78
 
 const prefersReducedMotion = () =>
@@ -77,7 +83,7 @@ function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
     if (!node) return
 
     const raw = reduced ? 1 : progress.current
-    const fall = easeOutCubic(range(raw, 0, FALL_END))
+    const fall = easeOutCubic(range(raw, FALL_START, FALL_END))
 
     // recuo por tempo: o scroll está travado enquanto o texto é escrito
     settleRef.current = reduced
