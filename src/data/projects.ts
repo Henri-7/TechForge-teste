@@ -9,30 +9,30 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    title: 'Projeto em preparação',
+    title: 'Barbearia Elite',
+    category: 'Website / Agendamento',
+    description:
+      'Site de barbearia com apresentação premium e fluxo de agendamento online.',
+    image: '/assets/site-barbeiro-preview.png',
+    technologies: [],
+    link: 'https://site-barbeiro-eight.vercel.app/',
+  },
+  {
+    title: 'Jimenez Milhas',
     category: 'Website / Sistema',
     description:
-      'Espaço reservado para um case real da TechForge, com problema, solução e imagens do projeto.',
-    image: '',
+      'Site para compra, venda e emissão com milhas aéreas, com apresentação clara do serviço.',
+    image: '/assets/jimenez-milhas-preview.png',
     technologies: [],
-    link: '',
+    link: 'https://jimenez-milhas.vercel.app/',
   },
   {
-    title: 'Projeto em preparação',
-    category: 'Automação / Integração',
+    title: 'EscamBook',
+    category: 'Website / Plataforma',
     description:
-      'Placeholder técnico para inserir um projeto validado, sem publicar clientes ou dados fictícios.',
-    image: '',
+      'Plataforma brasileira para troca gratuita de livros, conectando leitores de forma simples.',
+    image: '/assets/escambook-preview.png',
     technologies: [],
-    link: '',
-  },
-  {
-    title: 'Projeto em preparação',
-    category: 'Dashboard / Painel',
-    description:
-      'Área pronta para receber imagem, tecnologias reais e link quando o portfólio estiver definido.',
-    image: '',
-    technologies: [],
-    link: '',
+    link: 'https://escambook.com.br/',
   },
 ]

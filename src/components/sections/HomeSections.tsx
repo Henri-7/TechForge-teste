@@ -84,7 +84,7 @@ const HERO_BLOCKS = [
   'estrutura ideias.',
   'Engenharia de software para empresas que precisam transformar processos em soluções digitais claras, estáveis e preparadas para evoluir.',
 ]
-const HERO_SPEEDS = [34, 46, 46, 9]
+const HERO_SPEEDS = [14, 18, 18, 5]
 
 function HeroCopy({
   revealed,
@@ -292,15 +292,27 @@ export function Projects() {
         <div className="projects-grid">
           {projects.map((project, index) => (
             <article className="project-card reveal" key={`${project.title}-${index}`}>
-              <div className="project-preview" aria-label="Placeholder de projeto TechForge" role="img">
-                <span>{String(index + 1).padStart(2, '0')}</span>
+              <div
+                className={`project-preview ${project.image ? 'project-preview--site' : ''}`}
+                aria-label={project.image ? `Pré-visualização de ${project.title}` : 'Placeholder de projeto TechForge'}
+                role="img"
+              >
+                {project.image ? (
+                  <img src={project.image} alt="" loading="lazy" />
+                ) : (
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                )}
               </div>
               <div className="project-card__content">
                 <span>{project.category}</span>
                 <h3>{project.title}</h3>
                 <p>{project.description}</p>
-                <a href="#contato">
-                  Inserir dados reais
+                <a
+                  href={project.link || '#contato'}
+                  target={project.link ? '_blank' : undefined}
+                  rel={project.link ? 'noopener noreferrer' : undefined}
+                >
+                  {project.link ? 'Ver site' : 'Inserir dados reais'}
                   <ExternalLink aria-hidden="true" size={16} />
                 </a>
               </div>
@@ -371,19 +383,36 @@ export function Team() {
         <div className="team-grid">
           {team.map((member, index) => (
             <article className="team-member reveal" key={index}>
-              <div className="team-member__portrait" aria-label={`Integrante ${index + 1} pendente`}>
-                <span>{String(index + 1).padStart(2, '0')}</span>
+              <div
+                className={`team-member__portrait ${member.image ? 'team-member__portrait--image' : ''}`}
+                aria-label={member.image ? `Foto de ${member.name}` : `Integrante ${index + 1} pendente`}
+              >
+                {member.image ? (
+                  <img src={member.image} alt="" loading="lazy" />
+                ) : (
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                )}
               </div>
               <div className="team-member__info">
                 <span>Integrante TechForge</span>
                 <h3>{member.name || 'Nome pendente'}</h3>
-                <p>{member.role || 'Função e descrição a definir.'}</p>
+                <p>{member.bio || member.role || 'Função e descrição a definir.'}</p>
                 <div>
-                  <a aria-disabled="true">
+                  <a
+                    href={member.linkedin || undefined}
+                    target={member.linkedin ? '_blank' : undefined}
+                    rel={member.linkedin ? 'noopener noreferrer' : undefined}
+                    aria-disabled={member.linkedin ? undefined : 'true'}
+                  >
                     <ExternalLink aria-hidden="true" size={16} />
                     LinkedIn
                   </a>
-                  <a aria-disabled="true">
+                  <a
+                    href={member.github || undefined}
+                    target={member.github ? '_blank' : undefined}
+                    rel={member.github ? 'noopener noreferrer' : undefined}
+                    aria-disabled={member.github ? undefined : 'true'}
+                  >
                     <Code2 aria-hidden="true" size={16} />
                     GitHub
                   </a>
@@ -431,10 +460,13 @@ const initialForm: FormState = {
   message: '',
 }
 
+const CONTACT_EMAIL = 'techforge.contato@gmail.com'
+const FORM_ENDPOINT = '/api/contact'
+
 export function Contact() {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
-  const [status, setStatus] = useState<'idle' | 'ready'>('idle')
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
   function updateField(field: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -442,7 +474,7 @@ export function Contact() {
     setStatus('idle')
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextErrors: Partial<Record<keyof FormState, string>> = {}
 
@@ -452,8 +484,38 @@ export function Contact() {
     if (form.message.trim().length < 20) nextErrors.message = 'Descreva o projeto com pelo menos 20 caracteres.'
 
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length === 0) {
-      setStatus('ready')
+    if (Object.keys(nextErrors).length > 0) {
+      setStatus('idle')
+      return
+    }
+
+    setStatus('sending')
+
+    try {
+      const response = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim() || 'Nao informado',
+          company: form.company.trim() || 'Nao informada',
+          projectType: form.projectType,
+          message: form.message.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Falha no envio do formulario.')
+      }
+
+      setForm(initialForm)
+      setStatus('sent')
+    } catch {
+      setStatus('error')
     }
   }
 
@@ -464,12 +526,11 @@ export function Contact() {
           <p className="eyebrow">09 - Contato</p>
           <h2>Conte o que precisa ser construído.</h2>
           <p>
-            O formulário está preparado para validação e futura integração com um backend de envio.
-            Nenhuma mensagem é enviada enquanto o endpoint não for configurado.
+            Envie sua mensagem pelo formulário e a TechForge recebe tudo diretamente no email.
           </p>
           <div className="contact-note">
             <Mail aria-hidden="true" />
-            <span>Email oficial pendente de configuração.</span>
+            <span>{CONTACT_EMAIL}</span>
           </div>
         </div>
 
@@ -478,6 +539,7 @@ export function Contact() {
             <label>
               Nome
               <input
+                name="name"
                 value={form.name}
                 onChange={(event) => updateField('name', event.target.value)}
                 aria-invalid={Boolean(errors.name)}
@@ -489,6 +551,7 @@ export function Contact() {
               Email
               <input
                 type="email"
+                name="email"
                 value={form.email}
                 onChange={(event) => updateField('email', event.target.value)}
                 aria-invalid={Boolean(errors.email)}
@@ -501,6 +564,7 @@ export function Contact() {
             <label>
               Telefone
               <input
+                name="phone"
                 value={form.phone}
                 onChange={(event) => updateField('phone', event.target.value)}
                 placeholder="Opcional"
@@ -509,6 +573,7 @@ export function Contact() {
             <label>
               Empresa
               <input
+                name="company"
                 value={form.company}
                 onChange={(event) => updateField('company', event.target.value)}
                 placeholder="Opcional"
@@ -518,6 +583,7 @@ export function Contact() {
           <label>
             Tipo de projeto
             <select
+              name="projectType"
               value={form.projectType}
               onChange={(event) => updateField('projectType', event.target.value)}
               aria-invalid={Boolean(errors.projectType)}
@@ -535,6 +601,7 @@ export function Contact() {
           <label>
             Mensagem
             <textarea
+              name="message"
               value={form.message}
               onChange={(event) => updateField('message', event.target.value)}
               aria-invalid={Boolean(errors.message)}
@@ -543,16 +610,22 @@ export function Contact() {
             {errors.message ? <span className="field-error">{errors.message}</span> : null}
           </label>
 
-          <button type="submit" className="submit-button">
+          <button type="submit" className="submit-button" disabled={status === 'sending'}>
             <PixelFill />
             <Send aria-hidden="true" size={18} />
-            <span>Conferir dados</span>
+            <span>{status === 'sending' ? 'Enviando...' : 'Enviar mensagem'}</span>
           </button>
 
-          {status === 'ready' ? (
+          {status === 'sent' ? (
             <p className="form-status" role="status">
               <BadgeCheck aria-hidden="true" size={18} />
-              Dados conferidos. Configure um endpoint para habilitar o envio real.
+              Mensagem enviada. Vamos responder pelo email informado.
+            </p>
+          ) : null}
+
+          {status === 'error' ? (
+            <p className="form-status form-status--error" role="alert">
+              Não foi possível enviar agora. Tente novamente em instantes.
             </p>
           ) : null}
         </form>

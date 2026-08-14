@@ -30,7 +30,7 @@ export function Footer() {
 
         <div>
           <h3>Contato</h3>
-          <p className="footer__pending">Email, LinkedIn, Instagram e GitHub pendentes.</p>
+          <p className="footer__pending">Instagram, techforge.contato@gmail.com e WhatsApp.</p>
         </div>
       </div>
       <div className="container footer__bottom">

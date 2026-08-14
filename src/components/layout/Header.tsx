@@ -1,17 +1,45 @@
 import { Menu, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { navigation } from '../../data/navigation'
 import { PixelFill } from '../ui/PixelFill'
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const isScrolledRef = useRef(false)
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 20)
-    onScroll()
+    let frame = 0
+
+    const update = () => {
+      frame = 0
+      const next = window.scrollY > 20
+      if (next === isScrolledRef.current) return
+      isScrolledRef.current = next
+      setIsScrolled(next)
+    }
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+
+    update()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 861px)')
+    const closeOnDesktop = () => {
+      if (media.matches) setIsOpen(false)
+    }
+
+    closeOnDesktop()
+    media.addEventListener('change', closeOnDesktop)
+    return () => media.removeEventListener('change', closeOnDesktop)
   }, [])
 
   return (

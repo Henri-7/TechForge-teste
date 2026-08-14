@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
-const PAUSE_BETWEEN_BLOCKS = 340
-const START_DELAY = 260
+const PAUSE_BETWEEN_BLOCKS = 120
+const START_DELAY = 80
 const FALLBACK_SPEED = 24
 
 const prefersReducedMotion = () =>
@@ -58,7 +58,7 @@ export function useSequentialTyping(segments: string[], speeds: number[], active
     const tick = (now: number) => {
       const elapsed = now - start
       while (count < total && timeline[count] <= elapsed) count += 1
-      setTyped(count)
+      setTyped((current) => (current === count ? current : count))
       if (count < total) frame = requestAnimationFrame(tick)
     }
 

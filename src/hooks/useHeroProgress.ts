@@ -20,17 +20,26 @@ export function useHeroProgress(sectionRef: RefObject<HTMLElement | null>, revea
 
     const root = document.documentElement
     let frame = 0
+    let lastProgress = -1
+    let lastRevealed = false
 
     const update = () => {
       frame = 0
       const distance = Math.max(section.offsetHeight - window.innerHeight, 1)
       const value = Math.min(Math.max(-section.getBoundingClientRect().top / distance, 0), 1)
       progress.current = value
-      root.style.setProperty('--hero-progress', value.toFixed(4))
+
+      if (Math.abs(value - lastProgress) >= 0.0005) {
+        lastProgress = value
+        root.style.setProperty('--hero-progress', value.toFixed(4))
+      }
 
       const next = value >= revealAt
-      root.classList.toggle('is-hero-revealed', next)
-      setRevealed((current) => (current === next ? current : next))
+      if (next !== lastRevealed) {
+        lastRevealed = next
+        root.classList.toggle('is-hero-revealed', next)
+        setRevealed(next)
+      }
     }
 
     const onScroll = () => {
@@ -45,6 +54,7 @@ export function useHeroProgress(sectionRef: RefObject<HTMLElement | null>, revea
       if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
+      root.style.removeProperty('--hero-progress')
       root.classList.remove('is-hero-revealed')
     }
   }, [sectionRef, revealAt])

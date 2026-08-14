@@ -1,6 +1,6 @@
 import { Environment, Lightformer, useGLTF } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Suspense, useEffect, useMemo, useRef, type RefObject } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { Group, MathUtils, Mesh, MeshStandardMaterial } from 'three'
 import { HeroBackdrop } from './HeroBackdrop'
 
@@ -76,7 +76,11 @@ function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
 
   // o logo deitado no Blender (extrusão em Z) precisa encarar a câmera
   const baseRotationX = Math.PI / 2
-  const scale = MathUtils.clamp(viewport.width / 9.5, 0.38, 0.72)
+  const isNarrow = viewport.width < 4.8
+  const scale = isNarrow
+    ? MathUtils.clamp(viewport.width / 6.2, 0.42, 0.58)
+    : MathUtils.clamp(viewport.width / 9.5, 0.38, 0.72)
+  const raisedY = isNarrow ? 1.45 : RAISED_Y
 
   useFrame((state, delta) => {
     const node = group.current
@@ -97,7 +101,7 @@ function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
     // fase 1: cai de fora da tela até o centro / fase 2: sobe para liberar o texto
     const targetY =
       MathUtils.lerp(START_Y, CENTER_Y, fall) +
-      (RAISED_Y - CENTER_Y) * settle +
+      (raisedY - CENTER_Y) * settle +
       Math.sin(t * 0.9) * 0.06 * idle
     const targetZ = MathUtils.lerp(-1.6, 0, fall)
 
@@ -139,7 +143,7 @@ function Lighting() {
       <directionalLight position={[4, 6, 6]} intensity={2.1} />
       <directionalLight position={[-6, 2, -4]} intensity={1.5} color="#2f7bff" />
       {/* ambiente montado com lightformers: reflexos de metal sem baixar HDR externo */}
-      <Environment resolution={256} frames={1}>
+      <Environment resolution={128} frames={1}>
         <Lightformer form="rect" intensity={3} position={[0, 3, 4]} scale={[8, 4, 1]} />
         <Lightformer
           form="rect"
@@ -179,6 +183,22 @@ const supportsWebGL = () => {
 export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
   const webgl = useMemo(supportsWebGL, [])
   const shell = useRef<HTMLDivElement>(null)
+  const [isCanvasActive, setIsCanvasActive] = useState(true)
+
+  useEffect(() => {
+    const node = shell.current
+    if (!node) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsCanvasActive(entry.isIntersecting)
+      },
+      { rootMargin: '120% 0px' },
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   /**
    * Rede de segurança para a medida do <Canvas>. Este componente chega por
@@ -236,6 +256,7 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
   return (
     <div className="hero-canvas" aria-hidden="true" ref={shell}>
       <Canvas
+        frameloop={isCanvasActive ? 'always' : 'demand'}
         camera={{ position: [0, 0, 9], fov: 32 }}
         /**
          * Teto em 1.5 e não 2: com o fundo virando shader de tela cheia, cada
@@ -243,8 +264,12 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
          * Em tela retina o 2x dobrava esse custo por quadro e o ganho visual
          * num fundo escuro e desfocado é mínimo.
          */
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true }}
+        dpr={[1, 1.25]}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: 'high-performance',
+        }}
         /**
          * O padrão do r3f mede o container com `scroll: true` e debounce de
          * 50ms. Dentro do palco sticky do hero essa primeira medida se perde e

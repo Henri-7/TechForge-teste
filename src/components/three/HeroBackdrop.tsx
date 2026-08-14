@@ -1,6 +1,6 @@
 import { useTexture } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, type RefObject } from 'react'
+import { useMemo, useRef, type RefObject } from 'react'
 import { NoColorSpace, Vector2 } from 'three'
 
 const TEXTURE_URL = '/assets/hero-background.webp'
@@ -109,6 +109,7 @@ export function HeroBackdrop({ progress }: HeroBackdropProps) {
   const texture = useTexture(TEXTURE_URL)
   const size = useThree((state) => state.size)
   const reduced = useMemo(prefersReducedMotion, [])
+  const lastSize = useRef({ width: 0, height: 0 })
 
   const uniforms = useMemo(
     () => ({
@@ -130,7 +131,11 @@ export function HeroBackdrop({ progress }: HeroBackdropProps) {
   }, [texture, uniforms])
 
   useFrame((state, delta) => {
-    uniforms.uResolution.value.set(size.width, size.height)
+    if (lastSize.current.width !== size.width || lastSize.current.height !== size.height) {
+      uniforms.uResolution.value.set(size.width, size.height)
+      lastSize.current = { width: size.width, height: size.height }
+    }
+
     uniforms.uProgress.value = reduced ? 1 : progress.current
     if (reduced) return
 

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Footer } from './components/layout/Footer'
 import { Header } from './components/layout/Header'
+import { WhatsAppFloatingButton } from './components/ui/WhatsAppFloatingButton'
 import {
   About,
   Contact,
@@ -49,6 +50,7 @@ function App() {
         <Contact />
       </main>
       <Footer />
+      <WhatsAppFloatingButton />
     </>
   )
 }

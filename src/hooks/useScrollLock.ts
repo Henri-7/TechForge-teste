@@ -36,6 +36,8 @@ export function useScrollLock(locked: boolean, getAnchor?: () => number) {
 
     const prevent = (event: Event) => event.preventDefault()
 
+    let frame = 0
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTextField(event.target)) return
       if (SCROLL_KEYS.has(event.key)) event.preventDefault()
@@ -45,18 +47,27 @@ export function useScrollLock(locked: boolean, getAnchor?: () => number) {
       if (Math.abs(window.scrollY - anchor) > 1) window.scrollTo(0, anchor)
     }
 
+    const requestHold = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        hold()
+      })
+    }
+
     hold()
 
     window.addEventListener('wheel', prevent, { passive: false })
     window.addEventListener('touchmove', prevent, { passive: false })
     window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('scroll', hold, { passive: true })
+    window.addEventListener('scroll', requestHold, { passive: true })
 
     return () => {
+      if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('wheel', prevent)
       window.removeEventListener('touchmove', prevent)
       window.removeEventListener('keydown', onKeyDown)
-      window.removeEventListener('scroll', hold)
+      window.removeEventListener('scroll', requestHold)
       root.style.scrollBehavior = previousBehavior
     }
   }, [locked, getAnchor])
