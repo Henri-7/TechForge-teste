@@ -29,6 +29,51 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+type ThreePerformanceProfile = {
+  antialias: boolean
+  dpr: [number, number]
+  extraLights: boolean
+  fps: number
+}
+
+const get3DPerformanceProfile = (): ThreePerformanceProfile => {
+  if (typeof window === 'undefined') {
+    return { antialias: true, dpr: [1, 1], extraLights: true, fps: 45 }
+  }
+
+  const nav = window.navigator as Navigator & {
+    connection?: { saveData?: boolean }
+    deviceMemory?: number
+  }
+  const isTouchScreen = window.matchMedia('(pointer: coarse)').matches
+  const isMobileWidth = window.matchMedia('(max-width: 760px)').matches
+  const isTabletWidth = window.matchMedia('(max-width: 1024px)').matches
+  const reduced = prefersReducedMotion()
+  const saveData = nav.connection?.saveData === true
+  const memory = nav.deviceMemory ?? 4
+  const cores = nav.hardwareConcurrency ?? 4
+  const pixelRatio = window.devicePixelRatio || 1
+  const isMobileLike = isTouchScreen || isMobileWidth
+
+  if (reduced) {
+    return { antialias: false, dpr: [0.75, 0.75], extraLights: false, fps: 12 }
+  }
+
+  if (isMobileLike && (saveData || memory <= 3 || cores <= 4)) {
+    return { antialias: false, dpr: [0.75, 0.75], extraLights: false, fps: 20 }
+  }
+
+  if (isMobileLike && (memory <= 4 || cores <= 6 || pixelRatio >= 2.5)) {
+    return { antialias: false, dpr: [0.85, 0.85], extraLights: false, fps: 24 }
+  }
+
+  if (isMobileLike || isTabletWidth) {
+    return { antialias: false, dpr: [1, 1], extraLights: true, fps: 36 }
+  }
+
+  return { antialias: true, dpr: [1, 1], extraLights: true, fps: 45 }
+}
+
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
 const range = (value: number, start: number, end: number) =>
@@ -135,16 +180,49 @@ type HeroLogo3DProps = {
   revealed: boolean
 }
 
-function Lighting() {
+function Lighting({ lowPower }: { lowPower: boolean }) {
   return (
     <>
       <ambientLight intensity={0.62} />
       <hemisphereLight args={['#f5f8ff', '#0b1020', 0.6]} />
       <directionalLight position={[4, 6, 6]} intensity={2.4} />
-      <directionalLight position={[-6, 2, -4]} intensity={1.8} color="#2f7bff" />
-      <pointLight position={[0, 2.4, 4]} intensity={0.85} color="#ffffff" />
+      {!lowPower ? (
+        <>
+          <directionalLight position={[-6, 2, -4]} intensity={1.8} color="#2f7bff" />
+          <pointLight position={[0, 2.4, 4]} intensity={0.85} color="#ffffff" />
+        </>
+      ) : null}
     </>
   )
+}
+
+function FrameLimiter({ active, fps }: { active: boolean; fps: number }) {
+  const invalidate = useThree((state) => state.invalidate)
+
+  useEffect(() => {
+    if (!active) return
+
+    let raf = 0
+    let lastFrame = 0
+    const frameInterval = 1000 / fps
+
+    const tick = (time: number) => {
+      if (time - lastFrame >= frameInterval) {
+        lastFrame = time
+        invalidate()
+      }
+
+      raf = requestAnimationFrame(tick)
+    }
+
+    raf = requestAnimationFrame(tick)
+
+    return () => {
+      cancelAnimationFrame(raf)
+    }
+  }, [active, fps, invalidate])
+
+  return null
 }
 
 const supportsWebGL = () => {
@@ -163,6 +241,7 @@ const supportsWebGL = () => {
 
 export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
   const webgl = useMemo(supportsWebGL, [])
+  const performance3D = useMemo(get3DPerformanceProfile, [])
   const shell = useRef<HTMLDivElement>(null)
   const [isCanvasActive, setIsCanvasActive] = useState(true)
 
@@ -230,7 +309,7 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
   return (
     <div className="hero-canvas" aria-hidden="true" ref={shell}>
       <Canvas
-        frameloop={isCanvasActive ? 'always' : 'demand'}
+        frameloop="demand"
         camera={{ position: [0, 0, 9], fov: 32 }}
         /**
          * Teto em 1.5 e não 2: com o fundo virando shader de tela cheia, cada
@@ -238,11 +317,12 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
          * Em tela retina o 2x dobrava esse custo por quadro e o ganho visual
          * num fundo escuro e desfocado é mínimo.
          */
-        dpr={[1, 1]}
+        dpr={performance3D.dpr}
         gl={{
-          antialias: true,
+          antialias: performance3D.antialias,
           alpha: true,
           powerPreference: 'high-performance',
+          stencil: false,
         }}
         /**
          * O padrão do r3f mede o container com `scroll: true` e debounce de
@@ -253,7 +333,8 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
         resize={{ scroll: false, debounce: 0 }}
       >
         <Suspense fallback={null}>
-          <Lighting />
+          <FrameLimiter active={isCanvasActive} fps={performance3D.fps} />
+          <Lighting lowPower={!performance3D.extraLights} />
           <FallingLogo progress={progress} revealed={revealed} />
         </Suspense>
       </Canvas>
