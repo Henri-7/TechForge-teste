@@ -463,19 +463,6 @@ html:not(.is-hero-revealed) .site-header {
 }
 
 /**
- * Assim que o canvas está pintando, as três camadas acima saem: o shader já
- * desenha a imagem, a grade e os degradês. Mantê-las era compor três camadas de
- * tela cheia por quadro — invisíveis sob o canvas opaco — e ainda recalcular o
- * scale de .hero-background a cada frame de scroll. Elas continuam existindo
- * para o carregamento e para quem não tem WebGL.
- */
-.has-hero-webgl .hero-background,
-.has-hero-webgl .hero-stage::before,
-.has-hero-webgl .hero-stage::after {
-  display: none;
-}
-
-/**
  * Tela de boas-vindas: o que aparece antes de qualquer scroll. Sai já nos
  * primeiros 7% do trilho — `--hero-progress * 14` chega a 1 em 0.0714 — e o
  * logo 3D só começa a cair depois disso (FALL_START em HeroLogo3D), então os
@@ -527,33 +514,9 @@ html:not(.is-hero-revealed) .site-header {
   contain: layout paint size;
 }
 
-.hero-canvas::before {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  display: grid;
-  place-items: center;
-  background: transparent;
-  opacity: 0.42;
-  transition: opacity 240ms ease;
-  content: '';
-  background-image: url('/assets/techforge-symbol.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: min(260px, 48vw);
-}
-
-.has-hero-webgl .hero-canvas::before {
-  opacity: 0;
-}
-
 .hero-canvas--fallback {
   display: grid;
   place-items: center;
-}
-
-.hero-canvas--fallback::before {
-  display: none;
 }
 
 .hero-canvas--fallback img {
@@ -1727,10 +1690,6 @@ textarea:focus {
     min-height: 100svh;
     padding-top: max(82px, env(safe-area-inset-top));
     padding-bottom: clamp(30px, 7dvh, 54px);
-  }
-
-  .hero-canvas::before {
-    background-size: min(220px, 54vw);
   }
 
   .hero-copy,

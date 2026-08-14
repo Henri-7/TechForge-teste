@@ -2,7 +2,6 @@ import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { Group, MathUtils, Mesh, MeshStandardMaterial } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { HeroBackdrop } from './HeroBackdrop'
 
 const MODEL_URL = '/models/techforge-logo.glb'
 
@@ -189,16 +188,11 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
    * tamanho default (300x150) e a cena nunca renderiza. Um resize destrava,
    * mas só depois que o r3f termina de se montar — daí a insistência em vez de
    * um disparo único. Para assim que o buffer bate com o container.
-   *
-   * É também aqui que `has-hero-webgl` entra no <html>: só a partir do momento
-   * em que o canvas está de fato pintando é que as camadas equivalentes em CSS
-   * podem sair de cena, senão o fundo pisca durante o carregamento.
    */
   useEffect(() => {
     const node = shell.current
     if (!node) return
 
-    const root = document.documentElement
     let frames = 0
     let raf = 0
 
@@ -206,13 +200,12 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
       const canvas = node.querySelector('canvas')
 
       if (canvas != null && canvas.width >= node.clientWidth) {
-        root.classList.add('has-hero-webgl')
         return
       }
 
       // ~180 quadros ≈ 3s de aba visível. Em aba oculta o rAF não roda, então o
       // orçamento simplesmente não anda — um setInterval expiraria em segundo
-      // plano e a classe nunca entraria depois.
+      // plano e poderia parar a correção antes da cena montar.
       if (frames > 180) return
       if (frames % 8 === 0) window.dispatchEvent(new Event('resize'))
       frames += 1
@@ -223,7 +216,6 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
 
     return () => {
       cancelAnimationFrame(raf)
-      root.classList.remove('has-hero-webgl')
     }
   }, [webgl])
 
@@ -246,7 +238,7 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
          * Em tela retina o 2x dobrava esse custo por quadro e o ganho visual
          * num fundo escuro e desfocado é mínimo.
          */
-        dpr={[1, 1.25]}
+        dpr={[1, 1]}
         gl={{
           antialias: true,
           alpha: true,
@@ -261,7 +253,6 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
         resize={{ scroll: false, debounce: 0 }}
       >
         <Suspense fallback={null}>
-          <HeroBackdrop progress={progress} />
           <Lighting />
           <FallingLogo progress={progress} revealed={revealed} />
         </Suspense>

@@ -140,7 +140,7 @@ export function Hero() {
     if (shouldLoadHero3D) return
 
     const loadHero3D = () => setShouldLoadHero3D(true)
-    const timer = window.setTimeout(loadHero3D, 900)
+    const timer = window.setTimeout(loadHero3D, 2200)
 
     window.addEventListener('wheel', loadHero3D, { passive: true, once: true })
     window.addEventListener('touchstart', loadHero3D, { passive: true, once: true })
@@ -182,7 +182,7 @@ export function Hero() {
         </div>
 
         {shouldLoadHero3D ? (
-          <Suspense fallback={<div className="hero-canvas" aria-hidden="true" />}>
+          <Suspense fallback={null}>
             <HeroLogo3D progress={progress} revealed={revealed} />
           </Suspense>
         ) : null}
