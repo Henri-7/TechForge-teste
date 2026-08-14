@@ -132,8 +132,29 @@ const HERO_REVEAL_AT = 0.85
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
   const [typingDone, setTypingDone] = useState(false)
+  const [shouldLoadHero3D, setShouldLoadHero3D] = useState(false)
   // texto e header só entram depois que o logo já assentou no meio da tela
   const { progress, revealed } = useHeroProgress(sectionRef, HERO_REVEAL_AT)
+
+  useEffect(() => {
+    if (shouldLoadHero3D) return
+
+    const loadHero3D = () => setShouldLoadHero3D(true)
+    const timer = window.setTimeout(loadHero3D, 900)
+
+    window.addEventListener('wheel', loadHero3D, { passive: true, once: true })
+    window.addEventListener('touchstart', loadHero3D, { passive: true, once: true })
+    window.addEventListener('pointerdown', loadHero3D, { passive: true, once: true })
+    window.addEventListener('keydown', loadHero3D, { once: true })
+
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('wheel', loadHero3D)
+      window.removeEventListener('touchstart', loadHero3D)
+      window.removeEventListener('pointerdown', loadHero3D)
+      window.removeEventListener('keydown', loadHero3D)
+    }
+  }, [shouldLoadHero3D])
 
   // trava exatamente no ponto do gatilho, mesmo que um flick tenha passado dele
   const lockAnchor = useCallback(() => {
@@ -160,9 +181,11 @@ export function Hero() {
           <p className="hero-welcome__title">TechForge</p>
         </div>
 
-        <Suspense fallback={null}>
-          <HeroLogo3D progress={progress} revealed={revealed} />
-        </Suspense>
+        {shouldLoadHero3D ? (
+          <Suspense fallback={<div className="hero-canvas" aria-hidden="true" />}>
+            <HeroLogo3D progress={progress} revealed={revealed} />
+          </Suspense>
+        ) : null}
 
         <HeroCopy revealed={revealed} onTypingChange={setTypingDone} />
 

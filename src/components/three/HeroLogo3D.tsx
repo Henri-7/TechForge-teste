@@ -1,7 +1,7 @@
-import { Environment, Lightformer, useGLTF } from '@react-three/drei'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { Group, MathUtils, Mesh, MeshStandardMaterial } from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { HeroBackdrop } from './HeroBackdrop'
 
 const MODEL_URL = '/models/techforge-logo.glb'
@@ -36,7 +36,7 @@ const range = (value: number, start: number, end: number) =>
   MathUtils.clamp((value - start) / (end - start), 0, 1)
 
 function LogoModel() {
-  const { scene } = useGLTF(MODEL_URL)
+  const { scene } = useLoader(GLTFLoader, MODEL_URL)
 
   const model = useMemo(() => {
     const clone = scene.clone(true)
@@ -139,29 +139,11 @@ type HeroLogo3DProps = {
 function Lighting() {
   return (
     <>
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[4, 6, 6]} intensity={2.1} />
-      <directionalLight position={[-6, 2, -4]} intensity={1.5} color="#2f7bff" />
-      {/* ambiente montado com lightformers: reflexos de metal sem baixar HDR externo */}
-      <Environment resolution={128} frames={1}>
-        <Lightformer form="rect" intensity={3} position={[0, 3, 4]} scale={[8, 4, 1]} />
-        <Lightformer
-          form="rect"
-          intensity={2.4}
-          color="#2f7bff"
-          position={[-5, 1, 2]}
-          scale={[6, 6, 1]}
-          rotation={[0, Math.PI / 3, 0]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={1.4}
-          color="#ffffff"
-          position={[5, -1, 1]}
-          scale={[5, 5, 1]}
-          rotation={[0, -Math.PI / 3, 0]}
-        />
-      </Environment>
+      <ambientLight intensity={0.62} />
+      <hemisphereLight args={['#f5f8ff', '#0b1020', 0.6]} />
+      <directionalLight position={[4, 6, 6]} intensity={2.4} />
+      <directionalLight position={[-6, 2, -4]} intensity={1.8} color="#2f7bff" />
+      <pointLight position={[0, 2.4, 4]} intensity={0.85} color="#ffffff" />
     </>
   )
 }
@@ -288,4 +270,4 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
   )
 }
 
-useGLTF.preload(MODEL_URL)
+useLoader.preload(GLTFLoader, MODEL_URL)

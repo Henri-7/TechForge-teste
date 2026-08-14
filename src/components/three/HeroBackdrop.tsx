@@ -1,7 +1,6 @@
-import { useTexture } from '@react-three/drei'
-import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef, type RefObject } from 'react'
-import { NoColorSpace, Vector2 } from 'three'
+import { useFrame, useLoader, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, type RefObject } from 'react'
+import { NoColorSpace, TextureLoader, Vector2 } from 'three'
 
 const TEXTURE_URL = '/assets/hero-background.webp'
 
@@ -106,7 +105,7 @@ type HeroBackdropProps = {
 }
 
 export function HeroBackdrop({ progress }: HeroBackdropProps) {
-  const texture = useTexture(TEXTURE_URL)
+  const texture = useLoader(TextureLoader, TEXTURE_URL)
   const size = useThree((state) => state.size)
   const reduced = useMemo(prefersReducedMotion, [])
   const lastSize = useRef({ width: 0, height: 0 })
@@ -124,7 +123,7 @@ export function HeroBackdrop({ progress }: HeroBackdropProps) {
   )
 
   // valores crus: sem conversão de espaço de cor, o fundo sai idêntico ao CSS
-  useMemo(() => {
+  useEffect(() => {
     texture.colorSpace = NoColorSpace
     const image = texture.image as { width: number; height: number } | undefined
     uniforms.uTexAspect.value = image ? image.width / image.height : 1
@@ -158,4 +157,4 @@ export function HeroBackdrop({ progress }: HeroBackdropProps) {
   )
 }
 
-useTexture.preload(TEXTURE_URL)
+useLoader.preload(TextureLoader, TEXTURE_URL)
