@@ -35,11 +35,11 @@ import { PixelFill } from '../ui/PixelFill'
 import { SectionTitle } from '../ui/SectionTitle'
 import { TypedText } from '../ui/TypedText'
 
-// three.js sai do bundle principal: o texto do hero pinta antes da cena carregar
-const HeroLogo3D = lazy(() =>
-  import('../three/HeroLogo3D').then((module) => ({ default: module.HeroLogo3D })),
-)
+const loadHeroLogo3D = () =>
+  import('../three/HeroLogo3D').then((module) => ({ default: module.HeroLogo3D }))
 
+// three.js sai do bundle principal: o HTML/CSS pinta antes da cena carregar
+const HeroLogo3D = lazy(loadHeroLogo3D)
 
 const serviceIcons: Record<Service['icon'], LucideIcon> = {
   globe: Globe2,
@@ -139,20 +139,31 @@ export function Hero() {
   useEffect(() => {
     if (shouldLoadHero3D) return
 
-    const loadHero3D = () => setShouldLoadHero3D(true)
-    const timer = window.setTimeout(loadHero3D, 2200)
+    let cancelled = false
+    let timeout = 0
+    const idleWindow = window as Window &
+      typeof globalThis & {
+        cancelIdleCallback?: (handle: number) => void
+        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number
+      }
 
-    window.addEventListener('wheel', loadHero3D, { passive: true, once: true })
-    window.addEventListener('touchstart', loadHero3D, { passive: true, once: true })
-    window.addEventListener('pointerdown', loadHero3D, { passive: true, once: true })
-    window.addEventListener('keydown', loadHero3D, { once: true })
+    const loadHero3D = () => {
+      if (cancelled) return
+      setShouldLoadHero3D(true)
+    }
+
+    const idle = idleWindow.requestIdleCallback
+      ? idleWindow.requestIdleCallback(loadHero3D, { timeout: 1400 })
+      : 0
+
+    if (!idleWindow.requestIdleCallback) {
+      timeout = window.setTimeout(loadHero3D, 800)
+    }
 
     return () => {
-      window.clearTimeout(timer)
-      window.removeEventListener('wheel', loadHero3D)
-      window.removeEventListener('touchstart', loadHero3D)
-      window.removeEventListener('pointerdown', loadHero3D)
-      window.removeEventListener('keydown', loadHero3D)
+      cancelled = true
+      if (idle && idleWindow.cancelIdleCallback) idleWindow.cancelIdleCallback(idle)
+      if (timeout) window.clearTimeout(timeout)
     }
   }, [shouldLoadHero3D])
 

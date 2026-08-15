@@ -33,45 +33,22 @@ type ThreePerformanceProfile = {
   antialias: boolean
   dpr: [number, number]
   extraLights: boolean
-  fps: number
+  mode: 'desktop' | 'mobile'
 }
 
 const get3DPerformanceProfile = (): ThreePerformanceProfile => {
   if (typeof window === 'undefined') {
-    return { antialias: true, dpr: [1, 1], extraLights: true, fps: 45 }
+    return { antialias: true, dpr: [1, 1], extraLights: true, mode: 'desktop' }
   }
 
-  const nav = window.navigator as Navigator & {
-    connection?: { saveData?: boolean }
-    deviceMemory?: number
-  }
   const isTouchScreen = window.matchMedia('(pointer: coarse)').matches
-  const isMobileWidth = window.matchMedia('(max-width: 760px)').matches
-  const isTabletWidth = window.matchMedia('(max-width: 1024px)').matches
-  const reduced = prefersReducedMotion()
-  const saveData = nav.connection?.saveData === true
-  const memory = nav.deviceMemory ?? 4
-  const cores = nav.hardwareConcurrency ?? 4
-  const pixelRatio = window.devicePixelRatio || 1
-  const isMobileLike = isTouchScreen || isMobileWidth
+  const isMobileWidth = window.matchMedia('(max-width: 900px)').matches
 
-  if (reduced) {
-    return { antialias: false, dpr: [0.75, 0.75], extraLights: false, fps: 12 }
+  if (isTouchScreen || isMobileWidth) {
+    return { antialias: false, dpr: [1, 1], extraLights: false, mode: 'mobile' }
   }
 
-  if (isMobileLike && (saveData || memory <= 3 || cores <= 4)) {
-    return { antialias: false, dpr: [0.75, 0.75], extraLights: false, fps: 20 }
-  }
-
-  if (isMobileLike && (memory <= 4 || cores <= 6 || pixelRatio >= 2.5)) {
-    return { antialias: false, dpr: [0.85, 0.85], extraLights: false, fps: 24 }
-  }
-
-  if (isMobileLike || isTabletWidth) {
-    return { antialias: false, dpr: [1, 1], extraLights: true, fps: 36 }
-  }
-
-  return { antialias: true, dpr: [1, 1], extraLights: true, fps: 45 }
+  return { antialias: true, dpr: [1, 1], extraLights: true, mode: 'desktop' }
 }
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
@@ -112,9 +89,15 @@ function LogoModel() {
   return <primitive object={model} />
 }
 
-function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
+type FallingLogoProps = HeroLogo3DProps & {
+  mobile: boolean
+  onMotionRest: () => void
+}
+
+function FallingLogo({ mobile, onMotionRest, progress, revealed }: FallingLogoProps) {
   const group = useRef<Group>(null)
   const settleRef = useRef(0)
+  const wasMoving = useRef(true)
   const viewport = useThree((state) => state.viewport)
   const reduced = useMemo(prefersReducedMotion, [])
 
@@ -140,7 +123,9 @@ function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
     const settle = easeInOut(settleRef.current)
 
     const t = state.clock.elapsedTime
-    const idle = reduced ? 0 : fall
+    const idle = reduced || mobile ? 0 : fall
+    const pointerX = mobile ? 0 : state.pointer.x
+    const pointerY = mobile ? 0 : state.pointer.y
 
     // fase 1: cai de fora da tela até o centro / fase 2: sobe para liberar o texto
     const targetY =
@@ -152,10 +137,10 @@ function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
     // tombo: chega inclinado e assenta de frente, com leve balanço depois
     const targetRotX = MathUtils.lerp(baseRotationX + 0.6, baseRotationX, fall) +
       Math.sin(t * 0.5) * 0.04 * idle -
-      state.pointer.y * 0.08 * fall
+      pointerY * 0.08 * fall
     const targetRotY = MathUtils.lerp(-0.7, 0, fall) +
       Math.sin(t * 0.6) * 0.07 * idle +
-      state.pointer.x * 0.14 * fall
+      pointerX * 0.14 * fall
     const targetRotZ = MathUtils.lerp(0.28, 0, fall)
 
     node.position.y = MathUtils.damp(node.position.y, targetY, 6, delta)
@@ -166,6 +151,23 @@ function FallingLogo({ progress, revealed }: HeroLogo3DProps) {
 
     const targetScale = scale * MathUtils.lerp(0.86, 1, fall) * MathUtils.lerp(1, 0.8, settle)
     node.scale.setScalar(MathUtils.damp(node.scale.x, targetScale, 6, delta))
+
+    if (mobile) {
+      const isMoving =
+        Math.abs(node.position.y - targetY) > 0.002 ||
+        Math.abs(node.position.z - targetZ) > 0.002 ||
+        Math.abs(node.rotation.x - targetRotX) > 0.002 ||
+        Math.abs(node.rotation.y - targetRotY) > 0.002 ||
+        Math.abs(node.rotation.z - targetRotZ) > 0.002 ||
+        Math.abs(node.scale.x - targetScale) > 0.002
+
+      if (wasMoving.current && !isMoving) {
+        wasMoving.current = false
+        onMotionRest()
+      } else if (isMoving) {
+        wasMoving.current = true
+      }
+    }
   })
 
   return (
@@ -196,31 +198,36 @@ function Lighting({ lowPower }: { lowPower: boolean }) {
   )
 }
 
-function FrameLimiter({ active, fps }: { active: boolean; fps: number }) {
+function CanvasSizeSync({ target }: { target: RefObject<HTMLDivElement | null> }) {
   const invalidate = useThree((state) => state.invalidate)
+  const setSize = useThree((state) => state.setSize)
 
   useEffect(() => {
-    if (!active) return
+    const node = target.current
+    if (!node || typeof ResizeObserver === 'undefined') return
 
     let raf = 0
-    let lastFrame = 0
-    const frameInterval = 1000 / fps
-
-    const tick = (time: number) => {
-      if (time - lastFrame >= frameInterval) {
-        lastFrame = time
-        invalidate()
-      }
-
-      raf = requestAnimationFrame(tick)
+    const sync = () => {
+      raf = 0
+      const { height, width } = node.getBoundingClientRect()
+      if (width <= 0 || height <= 0) return
+      setSize(width, height)
+      invalidate()
     }
 
-    raf = requestAnimationFrame(tick)
+    const scheduleSync = () => {
+      if (!raf) raf = requestAnimationFrame(sync)
+    }
+
+    const observer = new ResizeObserver(scheduleSync)
+    observer.observe(node)
+    scheduleSync()
 
     return () => {
-      cancelAnimationFrame(raf)
+      if (raf) cancelAnimationFrame(raf)
+      observer.disconnect()
     }
-  }, [active, fps, invalidate])
+  }, [invalidate, setSize, target])
 
   return null
 }
@@ -243,7 +250,12 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
   const webgl = useMemo(supportsWebGL, [])
   const performance3D = useMemo(get3DPerformanceProfile, [])
   const shell = useRef<HTMLDivElement>(null)
-  const [isCanvasActive, setIsCanvasActive] = useState(true)
+  const isMobileMode = performance3D.mode === 'mobile'
+  const [isCanvasVisible, setIsCanvasVisible] = useState(true)
+  const [isDocumentVisible, setIsDocumentVisible] = useState(() =>
+    typeof document === 'undefined' ? true : document.visibilityState === 'visible',
+  )
+  const [isMotionActive, setIsMotionActive] = useState(true)
 
   useEffect(() => {
     const node = shell.current
@@ -251,7 +263,9 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsCanvasActive(entry.isIntersecting)
+        const visible = entry.isIntersecting
+        setIsCanvasVisible(visible)
+        if (visible) setIsMotionActive(true)
       },
       { rootMargin: '120% 0px' },
     )
@@ -260,43 +274,32 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
     return () => observer.disconnect()
   }, [])
 
-  /**
-   * Rede de segurança para a medida do <Canvas>. Este componente chega por
-   * import lazy e monta num layout que já está pronto, então a primeira
-   * notificação do ResizeObserver do r3f se perde: o canvas fica travado no
-   * tamanho default (300x150) e a cena nunca renderiza. Um resize destrava,
-   * mas só depois que o r3f termina de se montar — daí a insistência em vez de
-   * um disparo único. Para assim que o buffer bate com o container.
-   */
   useEffect(() => {
-    const node = shell.current
-    if (!node) return
-
-    let frames = 0
-    let raf = 0
-
-    const check = () => {
-      const canvas = node.querySelector('canvas')
-
-      if (canvas != null && canvas.width >= node.clientWidth) {
-        return
-      }
-
-      // ~180 quadros ≈ 3s de aba visível. Em aba oculta o rAF não roda, então o
-      // orçamento simplesmente não anda — um setInterval expiraria em segundo
-      // plano e poderia parar a correção antes da cena montar.
-      if (frames > 180) return
-      if (frames % 8 === 0) window.dispatchEvent(new Event('resize'))
-      frames += 1
-      raf = requestAnimationFrame(check)
+    const onVisibilityChange = () => {
+      const visible = document.visibilityState === 'visible'
+      setIsDocumentVisible(visible)
+      if (visible) setIsMotionActive(true)
     }
 
-    raf = requestAnimationFrame(check)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobileMode) return
+
+    const wakeMotion = () => setIsMotionActive((current) => (current ? current : true))
+
+    window.addEventListener('scroll', wakeMotion, { passive: true })
+    window.addEventListener('resize', wakeMotion)
+    window.addEventListener('orientationchange', wakeMotion)
 
     return () => {
-      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', wakeMotion)
+      window.removeEventListener('resize', wakeMotion)
+      window.removeEventListener('orientationchange', wakeMotion)
     }
-  }, [webgl])
+  }, [isMobileMode])
 
   if (!webgl) {
     return (
@@ -306,10 +309,15 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
     )
   }
 
+  const frameloop =
+    isCanvasVisible && isDocumentVisible && (!isMobileMode || isMotionActive)
+      ? 'always'
+      : 'demand'
+
   return (
     <div className="hero-canvas" aria-hidden="true" ref={shell}>
       <Canvas
-        frameloop="demand"
+        frameloop={frameloop}
         camera={{ position: [0, 0, 9], fov: 32 }}
         /**
          * Teto em 1.5 e não 2: com o fundo virando shader de tela cheia, cada
@@ -333,9 +341,14 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
         resize={{ scroll: false, debounce: 0 }}
       >
         <Suspense fallback={null}>
-          <FrameLimiter active={isCanvasActive} fps={performance3D.fps} />
+          <CanvasSizeSync target={shell} />
           <Lighting lowPower={!performance3D.extraLights} />
-          <FallingLogo progress={progress} revealed={revealed} />
+          <FallingLogo
+            mobile={isMobileMode}
+            onMotionRest={() => setIsMotionActive(false)}
+            progress={progress}
+            revealed={revealed}
+          />
         </Suspense>
       </Canvas>
     </div>

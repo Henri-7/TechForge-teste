@@ -30,6 +30,8 @@ export function useScrollLock(locked: boolean, getAnchor?: () => number) {
     if (!locked) return
 
     const root = document.documentElement
+    const isTouchScroll = window.matchMedia('(pointer: coarse)').matches
+    const shouldAnchorScroll = !isTouchScroll
     const anchor = getAnchor ? getAnchor() : window.scrollY
     const previousBehavior = root.style.scrollBehavior
     root.style.scrollBehavior = 'auto'
@@ -55,17 +57,17 @@ export function useScrollLock(locked: boolean, getAnchor?: () => number) {
       })
     }
 
-    hold()
+    if (shouldAnchorScroll) {
+      hold()
+      window.addEventListener('wheel', prevent, { passive: false })
+      window.addEventListener('scroll', requestHold, { passive: true })
+    }
 
-    window.addEventListener('wheel', prevent, { passive: false })
-    window.addEventListener('touchmove', prevent, { passive: false })
     window.addEventListener('keydown', onKeyDown)
-    window.addEventListener('scroll', requestHold, { passive: true })
 
     return () => {
       if (frame) cancelAnimationFrame(frame)
       window.removeEventListener('wheel', prevent)
-      window.removeEventListener('touchmove', prevent)
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('scroll', requestHold)
       root.style.scrollBehavior = previousBehavior
