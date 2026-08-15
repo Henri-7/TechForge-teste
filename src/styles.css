@@ -581,6 +581,18 @@ html:not(.is-hero-revealed) .site-header {
   animation: hero-arrow-drop 1.9s cubic-bezier(0.33, 1, 0.68, 1) infinite;
 }
 
+@media (pointer: coarse) and (max-width: 900px) {
+  .hero-stage {
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .hero-background {
+    transform: none;
+    will-change: auto;
+  }
+}
+
 @keyframes hero-arrow-drop {
   0% {
     opacity: 0;
@@ -1686,10 +1698,15 @@ textarea:focus {
   }
 
   .hero-stage {
-    height: 100dvh;
+    height: 100svh;
     min-height: 100svh;
     padding-top: max(82px, env(safe-area-inset-top));
-    padding-bottom: clamp(30px, 7dvh, 54px);
+    padding-bottom: clamp(30px, 7svh, 54px);
+  }
+
+  .hero-background {
+    transform: none;
+    will-change: auto;
   }
 
   .hero-copy,
@@ -1872,6 +1889,8 @@ textarea:focus {
   }
 
   .hero-stage {
+    height: 100svh;
+    min-height: 100svh;
     padding-top: 74px;
     padding-bottom: 22px;
   }

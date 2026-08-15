@@ -198,9 +198,16 @@ function Lighting({ lowPower }: { lowPower: boolean }) {
   )
 }
 
-function CanvasSizeSync({ target }: { target: RefObject<HTMLDivElement | null> }) {
+function CanvasSizeSync({
+  mobile,
+  target,
+}: {
+  mobile: boolean
+  target: RefObject<HTMLDivElement | null>
+}) {
   const invalidate = useThree((state) => state.invalidate)
   const setSize = useThree((state) => state.setSize)
+  const lastSize = useRef({ height: 0, orientation: '', width: 0 })
 
   useEffect(() => {
     const node = target.current
@@ -209,8 +216,25 @@ function CanvasSizeSync({ target }: { target: RefObject<HTMLDivElement | null> }
     let raf = 0
     const sync = () => {
       raf = 0
-      const { height, width } = node.getBoundingClientRect()
+      const rect = node.getBoundingClientRect()
+      const height = Math.round(rect.height)
+      const width = Math.round(rect.width)
       if (width <= 0 || height <= 0) return
+
+      const orientation = width > height ? 'landscape' : 'portrait'
+      const previous = lastSize.current
+      const widthDelta = Math.abs(width - previous.width)
+      const heightDelta = Math.abs(height - previous.height)
+      const orientationChanged = previous.orientation !== '' && previous.orientation !== orientation
+
+      if (previous.width > 0) {
+        const widthChanged = widthDelta >= 2
+        const significantHeightChange = heightDelta >= (mobile ? 96 : 2)
+
+        if (!widthChanged && !orientationChanged && !significantHeightChange) return
+      }
+
+      lastSize.current = { height, orientation, width }
       setSize(width, height)
       invalidate()
     }
@@ -227,7 +251,7 @@ function CanvasSizeSync({ target }: { target: RefObject<HTMLDivElement | null> }
       if (raf) cancelAnimationFrame(raf)
       observer.disconnect()
     }
-  }, [invalidate, setSize, target])
+  }, [invalidate, mobile, setSize, target])
 
   return null
 }
@@ -341,7 +365,7 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
         resize={{ scroll: false, debounce: 0 }}
       >
         <Suspense fallback={null}>
-          <CanvasSizeSync target={shell} />
+          <CanvasSizeSync mobile={isMobileMode} target={shell} />
           <Lighting lowPower={!performance3D.extraLights} />
           <FallingLogo
             mobile={isMobileMode}
