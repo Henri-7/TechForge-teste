@@ -352,6 +352,83 @@ html:not(.is-hero-revealed) .site-header {
   --pixel-label: var(--graphite);
 }
 
+.toast {
+  position: fixed;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: min(380px, calc(100vw - 44px));
+  padding: 18px;
+  border: 1px solid var(--steel-blue-light);
+  border-radius: var(--radius-md);
+  background: var(--graphite-2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  animation: toast-in 320ms ease;
+}
+
+.toast__icon {
+  flex-shrink: 0;
+  color: var(--accent-blue);
+}
+
+.toast__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toast__content strong {
+  color: var(--white);
+  font-size: 0.92rem;
+  text-transform: uppercase;
+}
+
+.toast__content p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.toast__close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color var(--duration) ease;
+}
+
+.toast__close:hover,
+.toast__close:focus-visible {
+  color: var(--white);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
+
 .whatsapp-floating-button {
   position: fixed;
   right: max(22px, env(safe-area-inset-right));
@@ -1141,10 +1218,26 @@ html:not(.is-hero-revealed) .hero-copy {
   align-items: center;
   gap: 8px;
   margin-top: var(--space-md);
-  color: var(--steel-blue);
+  padding: 10px 16px;
+  border: 1px solid var(--steel-blue);
+  border-radius: var(--radius-sm);
+  background: var(--steel-blue);
+  color: var(--white);
   font-size: 0.82rem;
   font-weight: 800;
   text-transform: uppercase;
+  transition:
+    background var(--duration) ease,
+    border-color var(--duration) ease,
+    transform var(--duration) ease;
+}
+
+@media (hover: hover) {
+  .project-card a:hover {
+    background: var(--steel-blue-light);
+    border-color: var(--steel-blue-light);
+    transform: translateY(-1px);
+  }
 }
 
 .process-list {
