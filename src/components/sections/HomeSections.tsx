@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  BadgeCheck,
   BarChart3,
   ChevronDown,
   Code2,
@@ -33,6 +32,7 @@ import { team } from '../../data/team'
 import { Button } from '../ui/Button'
 import { PixelFill } from '../ui/PixelFill'
 import { SectionTitle } from '../ui/SectionTitle'
+import { Toast } from '../ui/Toast'
 import { TypedText } from '../ui/TypedText'
 
 const loadHeroLogo3D = () =>
@@ -501,6 +501,7 @@ export function Contact() {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
+  const [submittedName, setSubmittedName] = useState('')
 
   function updateField(field: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -515,7 +516,7 @@ export function Contact() {
     if (!form.name.trim()) nextErrors.name = 'Informe seu nome.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um email válido.'
     if (!form.projectType) nextErrors.projectType = 'Selecione o tipo de projeto.'
-    if (form.message.trim().length < 20) nextErrors.message = 'Descreva o projeto com pelo menos 20 caracteres.'
+    if (!form.message.trim()) nextErrors.message = 'Conte o que você quer criar.'
 
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -546,6 +547,7 @@ export function Contact() {
         throw new Error('Falha no envio do formulario.')
       }
 
+      setSubmittedName(form.name.trim())
       setForm(initialForm)
       setStatus('sent')
     } catch {
@@ -650,19 +652,18 @@ export function Contact() {
             <span>{status === 'sending' ? 'Enviando...' : 'Enviar mensagem'}</span>
           </button>
 
-          {status === 'sent' ? (
-            <p className="form-status" role="status">
-              <BadgeCheck aria-hidden="true" size={18} />
-              Mensagem enviada. Vamos responder pelo email informado.
-            </p>
-          ) : null}
-
           {status === 'error' ? (
             <p className="form-status form-status--error" role="alert">
               Não foi possível enviar agora. Tente novamente em instantes.
             </p>
           ) : null}
         </form>
+
+        <Toast
+          open={status === 'sent'}
+          name={submittedName}
+          onClose={() => setStatus('idle')}
+        />
       </div>
     </section>
   )

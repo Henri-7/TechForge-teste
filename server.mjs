@@ -73,8 +73,8 @@ function validateContactForm(data) {
   if (!String(data.name || '').trim()) errors.name = 'Informe seu nome.'
   if (!emailPattern.test(String(data.email || '').trim())) errors.email = 'Informe um email valido.'
   if (!String(data.projectType || '').trim()) errors.projectType = 'Selecione o tipo de projeto.'
-  if (String(data.message || '').trim().length < 20) {
-    errors.message = 'Descreva o projeto com pelo menos 20 caracteres.'
+  if (!String(data.message || '').trim()) {
+    errors.message = 'Conte o que você quer criar.'
   }
 
   return errors
