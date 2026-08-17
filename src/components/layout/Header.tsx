@@ -44,11 +44,11 @@ export function Header() {
 
   return (
     <header className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
-      <a className="brand" href="#inicio" aria-label="TechForge - Início">
+      <a className="brand" href="#inicio" aria-label="TechForge">
         <img src="/assets/techforge-horizontal.png" alt="TechForge" />
       </a>
 
-      <nav className="desktop-nav" aria-label="Navegação principal">
+      <nav className="desktop-nav" aria-label="Menu">
         {navigation.map((item) => (
           <a key={item.href} href={item.href}>
             {item.label}
@@ -58,7 +58,7 @@ export function Header() {
 
       <a className="header-cta" href="#contato">
         <PixelFill />
-        <span>Fale conosco</span>
+        <span>Contato</span>
       </a>
 
       <button
@@ -80,7 +80,7 @@ export function Header() {
         ))}
         <a href="#contato" className="mobile-cta" onClick={() => setIsOpen(false)}>
           <PixelFill />
-          <span>Fale conosco</span>
+          <span>Contato</span>
         </a>
       </div>
     </header>

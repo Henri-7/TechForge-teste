@@ -51,38 +51,38 @@ const serviceIcons: Record<Service['icon'], LucideIcon> = {
 }
 
 const processSteps = [
-  ['Entender', 'Problema, contexto, objetivo e prioridade.'],
-  ['Planejar', 'Estrutura, funcionalidades e próximos passos.'],
-  ['Construir', 'Produto digital funcional, claro e responsivo.'],
-  ['Validar', 'Fluxos, performance, acessibilidade e consistência.'],
-  ['Evoluir', 'Entrega preparada para novas etapas.'],
+  ['Entender', 'Contexto, objetivo e prioridade.'],
+  ['Planejar', 'Estrutura, escopo e próximos passos.'],
+  ['Construir', 'Produto funcional e responsivo.'],
+  ['Validar', 'Fluxos, performance e consistência.'],
+  ['Evoluir', 'Base pronta para crescer.'],
 ]
 
 const differentials = [
   {
     title: 'Soluções sob medida',
-    text: 'Cada projeto parte de uma necessidade real, não de um pacote pronto.',
+    text: 'Projetos nascem da necessidade real.',
   },
   {
     title: 'Tecnologia com propósito',
-    text: 'A escolha técnica precisa simplificar processos e sustentar o produto.',
+    text: 'A técnica simplifica e sustenta.',
   },
   {
     title: 'Arquitetura escalável',
-    text: 'Estruturas pensadas para evoluir sem comprometer a base.',
+    text: 'Base pronta para evoluir.',
   },
   {
     title: 'Processo estruturado',
-    text: 'Entendimento, construção e validação caminham juntos.',
+    text: 'Clareza do início à validação.',
   },
 ]
 
 // blocos digitados na ordem; os arrays são constantes porque o hook depende deles
 const HERO_BLOCKS = [
   'TechForge',
-  'Software que',
-  'estrutura ideias.',
-  'Engenharia de software para empresas que precisam transformar processos em soluções digitais claras, estáveis e preparadas para evoluir.',
+  'Coloque sua',
+  'necessidade em prática',
+  'Software para transformar processos em soluções digitais claras, estáveis e prontas para evoluir.',
 ]
 const HERO_SPEEDS = [14, 18, 18, 5]
 
@@ -118,7 +118,7 @@ function HeroCopy({
         <TypedText text={HERO_BLOCKS[3]} visible={slices[3]} caret={caretIndex === 3} />
       </p>
       <div className={`hero-actions ${done ? 'is-typed' : ''}`}>
-        <Button href="#contato">Iniciar projeto</Button>
+        <Button href="#contato">Iniciar</Button>
         <Button href="#solucoes" variant="ghost">
           Ver soluções
         </Button>
@@ -190,6 +190,10 @@ export function Hero() {
         <div className="hero-welcome">
           <p className="eyebrow">Bem-vindo à</p>
           <p className="hero-welcome__title">TechForge</p>
+          <span className="hero-welcome__scroll" aria-hidden="true">
+            <ChevronDown size={30} strokeWidth={2.2} />
+            Role para baixo
+          </span>
         </div>
 
         {shouldLoadHero3D ? (
@@ -199,10 +203,6 @@ export function Hero() {
         ) : null}
 
         <HeroCopy revealed={revealed} onTypingChange={setTypingDone} />
-
-        <span className="hero-scroll-hint" aria-hidden="true">
-          Role para revelar
-        </span>
 
         {/* entra quando a digitação acaba e o scroll é destravado */}
         <span
@@ -221,10 +221,10 @@ export function Positioning() {
     <section className="positioning">
       <div className="container positioning__grid">
         <span className="section-index">01</span>
-        <h2 className="reveal">Software que estrutura ideias.</h2>
+        <h2 className="reveal">Coloque sua necessidade em prática</h2>
         <p className="reveal">
-          A TechForge transforma necessidades reais em soluções digitais funcionais, combinando
-          planejamento, design e desenvolvimento.
+          Transformamos necessidades reais em soluções digitais com planejamento, design e
+          desenvolvimento.
         </p>
       </div>
     </section>
@@ -256,9 +256,9 @@ export function Services() {
       <div className="container">
         <SectionTitle
           eyebrow="02 - Soluções"
-          title="Tecnologia aplicada ao que precisa funcionar."
+          title="Tecnologia para o que precisa funcionar."
           accent="funcionar"
-          description="Uma estrutura objetiva para desenvolver, conectar e automatizar partes importantes da operação."
+          description="Desenvolvemos, conectamos e automatizamos partes essenciais da operação."
         />
 
         <div className="services-list">
@@ -296,7 +296,7 @@ export function Differentials() {
           eyebrow="03 - Diferenciais"
           title="Menos improviso. Mais estrutura."
           accent="estrutura"
-          description="O trabalho combina clareza de escopo, decisões técnicas conscientes e uma entrega preparada para evolução."
+          description="Escopo claro, escolhas conscientes e entrega pronta para evoluir."
         />
         <div className="differential-grid">
           {differentials.map((item, index) => (
@@ -318,9 +318,9 @@ export function Projects() {
       <div className="container">
         <SectionTitle
           eyebrow="04 - Projetos"
-          title="Portfólio preparado para cases reais."
+          title="Portfólio com cases reais."
           accent="cases"
-          description="Sem clientes fictícios. Os espaços abaixo existem para receber projetos validados pela TechForge."
+          description="Projetos reais validados pela TechForge."
         />
 
         <div className="projects-grid">
@@ -366,7 +366,7 @@ export function Process() {
           eyebrow="05 - Processo"
           title="Da ideia à solução."
           accent="solução"
-          description="Um fluxo simples para sair do problema e chegar a uma entrega digital validada."
+          description="Do problema à entrega validada, em etapas claras."
         />
 
         <div className="process-list">
@@ -392,10 +392,10 @@ export function About() {
         </div>
         <div className="about-copy reveal">
           <p className="eyebrow">06 - Sobre</p>
-          <h2>Tecnologia não é o fim. É a estrutura que torna novas ideias possíveis.</h2>
+          <h2>Tecnologia é estrutura para novas ideias.</h2>
           <p>
-            A TechForge desenvolve experiências web, sistemas e automações para transformar
-            desafios em soluções digitais úteis, consistentes e preparadas para evoluir.
+            Criamos web, sistemas e automações para resolver desafios digitais com clareza e
+            consistência.
           </p>
         </div>
       </div>
@@ -409,9 +409,9 @@ export function Team() {
       <div className="container">
         <SectionTitle
           eyebrow="07 - Equipe"
-          title="Três integrantes. Uma base técnica em construção."
+          title="Três pessoas. Uma base técnica."
           accent="base"
-          description="A estrutura está pronta para receber nome, função, foto e redes de cada participante."
+          description="Perfis, canais e projetos de cada integrante."
         />
 
         <div className="team-grid">
@@ -428,9 +428,9 @@ export function Team() {
                 )}
               </div>
               <div className="team-member__info">
-                <span>Integrante TechForge</span>
+                <span>TechForge</span>
                 <h3>{member.name || 'Nome pendente'}</h3>
-                <p>{member.bio || member.role || 'Função e descrição a definir.'}</p>
+                <p>{member.bio || member.role || 'Função a definir.'}</p>
                 <div>
                   <a
                     href={member.linkedin || undefined}
@@ -466,10 +466,10 @@ export function ContactCta() {
       <div className="container contact-cta__inner reveal">
         <div>
           <p className="eyebrow">08 - Próximo passo</p>
-          <h2>Vamos construir algo que faça sentido?</h2>
+          <h2>Vamos construir algo útil?</h2>
         </div>
         <Button href="#contato" variant="light">
-          Falar sobre um projeto
+          Falar de projeto
         </Button>
       </div>
     </section>
@@ -516,7 +516,11 @@ export function Contact() {
     if (!form.name.trim()) nextErrors.name = 'Informe seu nome.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um email válido.'
     if (!form.projectType) nextErrors.projectType = 'Selecione o tipo de projeto.'
+<<<<<<< Updated upstream
     if (!form.message.trim()) nextErrors.message = 'Conte o que você quer criar.'
+=======
+    if (form.message.trim().length < 20) nextErrors.message = 'Descreva em pelo menos 20 caracteres.'
+>>>>>>> Stashed changes
 
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -560,9 +564,9 @@ export function Contact() {
       <div className="container contact-grid">
         <div className="contact-copy reveal">
           <p className="eyebrow">09 - Contato</p>
-          <h2>Conte o que precisa ser construído.</h2>
+          <h2>Conte seu projeto.</h2>
           <p>
-            Envie sua mensagem pelo formulário e a TechForge recebe tudo diretamente no email.
+            Envie pelo formulário. A TechForge responde por email.
           </p>
           <div className="contact-note">
             <Mail aria-hidden="true" />
@@ -641,7 +645,7 @@ export function Contact() {
               value={form.message}
               onChange={(event) => updateField('message', event.target.value)}
               aria-invalid={Boolean(errors.message)}
-              placeholder="Conte o contexto, objetivo e o que precisa ser construído."
+              placeholder="Contexto, objetivo e o que precisa ser construído."
             />
             {errors.message ? <span className="field-error">{errors.message}</span> : null}
           </label>
@@ -649,12 +653,22 @@ export function Contact() {
           <button type="submit" className="submit-button" disabled={status === 'sending'}>
             <PixelFill />
             <Send aria-hidden="true" size={18} />
-            <span>{status === 'sending' ? 'Enviando...' : 'Enviar mensagem'}</span>
+            <span>{status === 'sending' ? 'Enviando...' : 'Enviar'}</span>
           </button>
 
+<<<<<<< Updated upstream
+=======
+          {status === 'sent' ? (
+            <p className="form-status" role="status">
+              <BadgeCheck aria-hidden="true" size={18} />
+              Mensagem enviada. Responderemos por email.
+            </p>
+          ) : null}
+
+>>>>>>> Stashed changes
           {status === 'error' ? (
             <p className="form-status form-status--error" role="alert">
-              Não foi possível enviar agora. Tente novamente em instantes.
+              Não foi possível enviar. Tente novamente.
             </p>
           ) : null}
         </form>

@@ -6,39 +6,39 @@ export type Service = {
 
 export const services: Service[] = [
   {
-    title: 'Desenvolvimento Web',
+    title: 'Criação de sites',
     description:
-      'Sites, landing pages e aplicações web com estrutura clara, performance e foco no objetivo do negócio.',
+      'Sites e aplicações com estrutura clara, performance e foco no negócio.',
     icon: 'globe',
   },
   {
-    title: 'Sistemas Personalizados',
+    title: 'Desenvolvimento de programas',
     description:
-      'Ferramentas sob medida para organizar processos internos, centralizar informações e apoiar a operação.',
+      'Ferramentas sob medida para organizar processos e centralizar informações.',
     icon: 'settings',
   },
   {
     title: 'Automações',
     description:
-      'Fluxos digitais para reduzir tarefas repetitivas, conectar etapas e ganhar eficiência.',
+      'Fluxos digitais para reduzir tarefas repetitivas e ganhar eficiência.',
     icon: 'workflow',
   },
   {
     title: 'Dashboards e Painéis',
     description:
-      'Interfaces de gestão para visualizar dados, indicadores e informações estratégicas com clareza.',
+      'Interfaces para visualizar dados e indicadores com clareza.',
     icon: 'chart',
   },
   {
     title: 'Integrações',
     description:
-      'Conexão entre sistemas, plataformas e serviços para sincronizar dados e simplificar rotinas.',
+      'Conexão entre sistemas para sincronizar dados e simplificar rotinas.',
     icon: 'plug',
   },
   {
     title: 'Soluções Digitais',
     description:
-      'Projetos que combinam web, sistemas e automação para resolver desafios específicos.',
+      'Web, sistemas e automação para desafios específicos.',
     icon: 'spark',
   },
 ]

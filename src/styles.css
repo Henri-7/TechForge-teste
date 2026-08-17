@@ -210,7 +210,6 @@ html:not(.is-hero-revealed) .site-header {
   color: var(--white);
   font-size: 0.82rem;
   font-weight: 800;
-  text-transform: uppercase;
   /* a cor do hover não é mais interpolada: quem pinta é a grade de .pixel-fill */
   --pixel-color: var(--steel-blue-light);
   --pixel-label: #ffffff;
@@ -564,6 +563,8 @@ html:not(.is-hero-revealed) .site-header {
 .hero-welcome .eyebrow {
   /* centralizado, o traço do eyebrow precisa dos dois lados */
   justify-content: center;
+  margin-bottom: clamp(14px, 2vw, 22px);
+  font-size: clamp(0.94rem, 1.18vw, 1.16rem);
 }
 
 .hero-welcome .eyebrow::after {
@@ -577,10 +578,29 @@ html:not(.is-hero-revealed) .site-header {
 .hero-welcome__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  font-size: clamp(3.1rem, 7vw, 6.8rem);
   font-weight: 800;
   line-height: 1.04;
-  text-transform: uppercase;
+}
+
+.hero-welcome__scroll {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  margin-top: clamp(20px, 3vw, 36px);
+  color: var(--steel-blue-light);
+  font-size: clamp(0.74rem, 0.9vw, 0.9rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  animation: welcome-scroll-blink 1.35s ease-in-out infinite;
+}
+
+.hero-welcome__scroll svg {
+  flex: 0 0 auto;
+  color: var(--white-soft);
 }
 
 .hero-canvas {
@@ -610,7 +630,6 @@ html:not(.is-hero-revealed) .site-header {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.16em;
-  text-transform: uppercase;
   opacity: calc(1 - var(--copy-in));
 }
 
@@ -689,6 +708,18 @@ html:not(.is-hero-revealed) .site-header {
   }
 }
 
+@keyframes welcome-scroll-blink {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: translateY(-2px);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(5px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-section {
     min-height: 100svh;
@@ -715,6 +746,10 @@ html:not(.is-hero-revealed) .site-header {
     animation: none;
     transform: none;
   }
+
+  .hero-welcome__scroll {
+    animation: none;
+  }
 }
 
 .hero-copy,
@@ -734,7 +769,6 @@ html:not(.is-hero-revealed) .site-header {
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .eyebrow::before {
@@ -830,10 +864,9 @@ html:not(.is-hero-revealed) .hero-copy {
 }
 
 .hero-copy h1 {
-  max-width: 720px;
+  max-width: 980px;
   font-size: clamp(2.4rem, 4.4vw, 4rem);
   line-height: 1.04;
-  text-transform: uppercase;
 }
 
 .hero-copy h1 span {
@@ -893,7 +926,6 @@ html:not(.is-hero-revealed) .hero-copy {
 .positioning h2 {
   font-size: clamp(2.35rem, 4.6vw, 4.5rem);
   line-height: 1.05;
-  text-transform: uppercase;
 }
 
 .positioning p {
@@ -935,7 +967,6 @@ html:not(.is-hero-revealed) .hero-copy {
 .contact-copy h2 {
   font-size: clamp(2.2rem, 4.1vw, 4.2rem);
   line-height: 1.08;
-  text-transform: uppercase;
 }
 
 .section-title h2 span,
@@ -960,7 +991,7 @@ html:not(.is-hero-revealed) .hero-copy {
 .service-row {
   position: relative;
   display: grid;
-  grid-template-columns: 70px 38px minmax(180px, 0.34fr) minmax(260px, 1fr) 44px;
+  grid-template-columns: 70px 38px minmax(240px, 0.4fr) minmax(260px, 1fr) 44px;
   gap: clamp(16px, 3vw, 40px);
   align-items: center;
   min-height: 124px;
@@ -1075,7 +1106,9 @@ html:not(.is-hero-revealed) .hero-copy {
 .service-row h3 {
   font-size: clamp(1.25rem, 2vw, 1.8rem);
   line-height: 1.16;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .service-row p {
@@ -1122,7 +1155,6 @@ html:not(.is-hero-revealed) .hero-copy {
 .differential-item h3 {
   margin-bottom: var(--space-sm);
   font-size: clamp(1.1rem, 1.6vw, 1.45rem);
-  text-transform: uppercase;
 }
 
 .differential-item p {
@@ -1196,13 +1228,11 @@ html:not(.is-hero-revealed) .hero-copy {
   color: var(--steel-blue);
   font-size: 0.78rem;
   font-weight: 800;
-  text-transform: uppercase;
 }
 
 .project-card h3 {
   margin: 12px 0;
   font-size: clamp(1.35rem, 2vw, 1.8rem);
-  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 
@@ -1225,6 +1255,7 @@ html:not(.is-hero-revealed) .hero-copy {
   color: var(--white);
   font-size: 0.82rem;
   font-weight: 800;
+<<<<<<< Updated upstream
   text-transform: uppercase;
   transition:
     background var(--duration) ease,
@@ -1238,6 +1269,8 @@ html:not(.is-hero-revealed) .hero-copy {
     border-color: var(--steel-blue-light);
     transform: translateY(-1px);
   }
+=======
+>>>>>>> Stashed changes
 }
 
 .process-list {
@@ -1260,7 +1293,6 @@ html:not(.is-hero-revealed) .hero-copy {
 
 .process-step h3 {
   font-size: clamp(1.3rem, 2.2vw, 2rem);
-  text-transform: uppercase;
 }
 
 .process-step p {
@@ -1374,13 +1406,11 @@ html:not(.is-hero-revealed) .hero-copy {
   color: var(--steel-blue-light);
   font-size: 0.76rem;
   font-weight: 800;
-  text-transform: uppercase;
 }
 
 .team-member h3 {
   margin: 10px 0;
   font-size: 1.45rem;
-  text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 
@@ -1487,7 +1517,6 @@ label {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
-  text-transform: uppercase;
 }
 
 input,
@@ -1571,11 +1600,26 @@ textarea:focus {
   line-height: 1.6;
 }
 
+.footer__contact {
+  display: grid;
+  gap: 2px;
+  font-size: clamp(0.72rem, 0.82vw, 0.9rem);
+}
+
+.footer__contact span {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+.footer__contact strong {
+  color: var(--white-soft);
+  font-weight: 700;
+}
+
 .footer h3 {
   margin: 0 0 var(--space-sm);
   font-family: var(--font-display);
   font-size: 1rem;
-  text-transform: uppercase;
 }
 
 .footer a {
@@ -1637,7 +1681,7 @@ textarea:focus {
   }
 
   .service-row {
-    grid-template-columns: 60px 34px minmax(180px, 0.42fr) minmax(260px, 1fr) 44px;
+    grid-template-columns: 60px 34px minmax(250px, 0.44fr) minmax(260px, 1fr) 44px;
   }
 
   .differential-grid,
@@ -1887,7 +1931,7 @@ textarea:focus {
   }
 
   .service-row h3 {
-    font-size: clamp(1rem, 5vw, 1.25rem);
+    font-size: clamp(1rem, 4.6vw, 1.18rem);
     line-height: 1.22;
   }
 

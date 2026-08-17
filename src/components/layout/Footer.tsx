@@ -30,12 +30,22 @@ export function Footer() {
 
         <div>
           <h3>Contato</h3>
-          <p className="footer__pending">Instagram, techforge.contato@gmail.com e WhatsApp.</p>
+          <p className="footer__pending footer__contact">
+            <span>
+              <strong>WhatsApp:</strong> (35) 98475-2062
+            </span>
+            <span>
+              <strong>Email:</strong> techforge.contato@gmail.com
+            </span>
+            <span>
+              <strong>Instagram:</strong> TechForge
+            </span>
+          </p>
         </div>
       </div>
       <div className="container footer__bottom">
         <span>© 2026 TechForge. Todos os direitos reservados.</span>
-        <span>Dados reais de contato e portfólio podem ser adicionados em seguida.</span>
+        <span>Sites, sistemas e automações sob medida.</span>
       </div>
     </footer>
   )
