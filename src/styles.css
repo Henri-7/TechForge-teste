@@ -1255,7 +1255,6 @@ html:not(.is-hero-revealed) .hero-copy {
   color: var(--white);
   font-size: 0.82rem;
   font-weight: 800;
-<<<<<<< Updated upstream
   text-transform: uppercase;
   transition:
     background var(--duration) ease,
@@ -1269,8 +1268,6 @@ html:not(.is-hero-revealed) .hero-copy {
     border-color: var(--steel-blue-light);
     transform: translateY(-1px);
   }
-=======
->>>>>>> Stashed changes
 }
 
 .process-list {

@@ -516,11 +516,7 @@ export function Contact() {
     if (!form.name.trim()) nextErrors.name = 'Informe seu nome.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Informe um email válido.'
     if (!form.projectType) nextErrors.projectType = 'Selecione o tipo de projeto.'
-<<<<<<< Updated upstream
-    if (!form.message.trim()) nextErrors.message = 'Conte o que você quer criar.'
-=======
     if (form.message.trim().length < 20) nextErrors.message = 'Descreva em pelo menos 20 caracteres.'
->>>>>>> Stashed changes
 
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -656,8 +652,6 @@ export function Contact() {
             <span>{status === 'sending' ? 'Enviando...' : 'Enviar'}</span>
           </button>
 
-<<<<<<< Updated upstream
-=======
           {status === 'sent' ? (
             <p className="form-status" role="status">
               <BadgeCheck aria-hidden="true" size={18} />
@@ -665,7 +659,6 @@ export function Contact() {
             </p>
           ) : null}
 
->>>>>>> Stashed changes
           {status === 'error' ? (
             <p className="form-status form-status--error" role="alert">
               Não foi possível enviar. Tente novamente.
