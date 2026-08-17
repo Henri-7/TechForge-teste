@@ -189,7 +189,7 @@ export function Hero() {
             mais abaixo, e dois h1 quebrariam a hierarquia de cabeçalhos. */}
         <div className="hero-welcome">
           <p className="eyebrow">Bem-vindo à</p>
-          <p className="hero-welcome__title">TechForge</p>
+          <p className="hero-welcome__title">TECHFORGE</p>
           <span className="hero-welcome__scroll" aria-hidden="true">
             <ChevronDown size={30} strokeWidth={2.2} />
             Role para baixo
