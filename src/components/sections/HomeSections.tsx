@@ -1,4 +1,4 @@
-import {
+import { BadgeCheck,
   ArrowRight,
   BarChart3,
   ChevronDown,
