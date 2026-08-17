@@ -80,8 +80,8 @@ const differentials = [
 // blocos digitados na ordem; os arrays são constantes porque o hook depende deles
 const HERO_BLOCKS = [
   'TechForge',
-  'Coloque sua',
-  'necessidade em prática',
+  'COLOQUE SUA',
+  'NECESSIDADE EM PRÁTICA',
   'Software para transformar processos em soluções digitais claras, estáveis e prontas para evoluir.',
 ]
 const HERO_SPEEDS = [14, 18, 18, 5]
