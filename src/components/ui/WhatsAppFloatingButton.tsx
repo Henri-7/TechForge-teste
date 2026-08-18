@@ -1,4 +1,5 @@
-const WHATSAPP_URL = 'https://wa.me/5535984752062'
+const WHATSAPP_MESSAGE = 'Olá! Vim pelo site da TechForge e quero saber mais sobre os serviços.'
+const WHATSAPP_URL = `https://wa.me/5535984752062?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`
 
 function WhatsAppIcon() {
   return (

@@ -443,9 +443,20 @@ html:not(.is-hero-revealed) .site-header {
   background: #25d366;
   color: #ffffff;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.9);
   transition:
     box-shadow var(--duration) ease,
-    transform var(--duration) ease;
+    opacity 420ms ease,
+    transform 420ms ease;
+}
+
+/* só surge quando o header libera, para não competir com a queda do logo 3D */
+html.is-hero-revealed .whatsapp-floating-button {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 .whatsapp-floating-button__icon {
@@ -456,7 +467,7 @@ html:not(.is-hero-revealed) .site-header {
 }
 
 @media (hover: hover) {
-  .whatsapp-floating-button:hover {
+  html.is-hero-revealed .whatsapp-floating-button:hover {
     box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38);
     transform: translateY(-2px) scale(1.03);
   }
@@ -1180,6 +1191,14 @@ html:not(.is-hero-revealed) .hero-copy {
   contain: layout paint;
 }
 
+/* especificidade acima de .reveal (0,1,0) para não perder a transição no cascade */
+.project-card.reveal {
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease,
+    box-shadow 320ms ease;
+}
+
 .project-preview {
   position: relative;
   min-height: 0;
@@ -1206,6 +1225,7 @@ html:not(.is-hero-revealed) .hero-copy {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  transition: transform 420ms ease;
 }
 
 .project-preview span {
@@ -1263,6 +1283,15 @@ html:not(.is-hero-revealed) .hero-copy {
 }
 
 @media (hover: hover) {
+  .project-card.reveal:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 48px rgba(15, 23, 42, 0.28);
+  }
+
+  .project-card.reveal:hover .project-preview--site img {
+    transform: scale(1.06);
+  }
+
   .project-card a:hover {
     background: var(--steel-blue-light);
     border-color: var(--steel-blue-light);
