@@ -2,6 +2,7 @@ import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { Group, MathUtils, Mesh, MeshStandardMaterial } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { HeroLogoFallback } from '../ui/HeroLogoFallback'
 
 const MODEL_URL = '/models/techforge-logo.glb'
 
@@ -36,9 +37,19 @@ type ThreePerformanceProfile = {
   mode: 'desktop' | 'mobile'
 }
 
+/**
+ * `antialias` fica desligado nos dois caminhos. Ligado, o contexto nasce com
+ * MSAA 4x (medido: `gl.SAMPLES === 4`), e como o canvas cobre o palco inteiro
+ * isso vira ~5,2M amostras limpas e resolvidas por quadro — custo que independe
+ * do que está em cena, já que o logo ocupa uma fração da tela. Medido a 4x de
+ * throttle de CPU, o scroll do hero saía de 33,3ms (30fps) para 16,7ms (60fps)
+ * só com essa mudança; luzes e geometria não moviam o número.
+ *
+ * O preço é serrilha na silhueta, mais visível durante a rotação que parada.
+ */
 const get3DPerformanceProfile = (): ThreePerformanceProfile => {
   if (typeof window === 'undefined') {
-    return { antialias: true, dpr: [1, 1], extraLights: true, mode: 'desktop' }
+    return { antialias: false, dpr: [1, 1], extraLights: true, mode: 'desktop' }
   }
 
   const isTouchScreen = window.matchMedia('(pointer: coarse)').matches
@@ -48,7 +59,7 @@ const get3DPerformanceProfile = (): ThreePerformanceProfile => {
     return { antialias: false, dpr: [1, 1], extraLights: false, mode: 'mobile' }
   }
 
-  return { antialias: true, dpr: [1, 1], extraLights: true, mode: 'desktop' }
+  return { antialias: false, dpr: [1, 1], extraLights: true, mode: 'desktop' }
 }
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
@@ -283,7 +294,9 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
 
   useEffect(() => {
     const node = shell.current
-    if (!node) return
+    // sem IntersectionObserver o canvas fica no estado inicial (visível), que é
+    // a degradação certa: renderiza sempre em vez de nunca
+    if (!node || typeof IntersectionObserver === 'undefined') return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -325,13 +338,7 @@ export function HeroLogo3D({ progress, revealed }: HeroLogo3DProps) {
     }
   }, [isMobileMode])
 
-  if (!webgl) {
-    return (
-      <div className="hero-canvas hero-canvas--fallback">
-        <img src="/assets/techforge-symbol.png" alt="" />
-      </div>
-    )
-  }
+  if (!webgl) return <HeroLogoFallback />
 
   const frameloop =
     isCanvasVisible && isDocumentVisible && (!isMobileMode || isMotionActive)

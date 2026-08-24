@@ -29,3 +29,6 @@ screenshots/service-cards-responsive/
 *.njsproj
 *.sln
 *.sw?
+
+# Local image assets (logos, sources)
+image/

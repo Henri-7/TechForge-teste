@@ -140,7 +140,17 @@ html:not(.is-hero-revealed) .site-header {
   pointer-events: none;
 }
 
-.site-header--scrolled,
+.site-header--scrolled {
+  min-height: 68px;
+  background: rgba(18, 18, 20, 0.94);
+  border-color: var(--line);
+}
+
+/**
+ * Bloco separado de propósito: `:has()` só existe a partir do Safari 15.4, e
+ * numa lista de seletores um item inválido invalida a regra inteira — junto
+ * com `.site-header--scrolled`, que não tem nada a ver com isso.
+ */
 .site-header:has(.mobile-panel--open) {
   min-height: 68px;
   background: rgba(18, 18, 20, 0.94);
@@ -498,6 +508,15 @@ html.is-hero-revealed .whatsapp-floating-button {
 .hero-section {
   /* altura extra = trilho de scroll que conduz a queda do logo 3D */
   position: relative;
+  /**
+   * Todo `svh`/`dvh` neste arquivo vem precedido do equivalente em `vh`.
+   * Navegador sem suporte (Safari < 15.4, Chrome < 108) descarta a declaração
+   * moderna como inválida e para na primeira; sem esse par a altura caía para
+   * `auto` e o trilho de scroll do hero simplesmente deixava de existir.
+   * Em iOS antigo `vh` não encolhe junto com a barra de URL — é pior que
+   * `svh`, e muito melhor que colapsar.
+   */
+  min-height: 340vh;
   min-height: 340svh;
   background: var(--graphite);
 }
@@ -508,9 +527,12 @@ html.is-hero-revealed .whatsapp-floating-button {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  height: 100vh;
   height: 100dvh;
+  min-height: 100vh;
   min-height: 100svh;
   padding-top: max(86px, env(safe-area-inset-top));
+  padding-bottom: clamp(40px, 7vh, 84px);
   padding-bottom: clamp(40px, 7dvh, 84px);
   overflow: hidden;
 }
@@ -690,7 +712,9 @@ html.is-hero-revealed .whatsapp-floating-button {
 
 @media (pointer: coarse) and (max-width: 900px) {
   .hero-stage {
+    height: 100vh;
     height: 100svh;
+    min-height: 100vh;
     min-height: 100svh;
   }
 
@@ -733,6 +757,7 @@ html.is-hero-revealed .whatsapp-floating-button {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-section {
+    min-height: 100vh;
     min-height: 100svh;
   }
 
@@ -1698,6 +1723,7 @@ textarea:focus {
   }
 
   .hero-section {
+    min-height: 300vh;
     min-height: 300svh;
   }
 
@@ -1857,13 +1883,17 @@ textarea:focus {
   }
 
   .hero-section {
+    min-height: 230vh;
     min-height: 230svh;
   }
 
   .hero-stage {
+    height: 100vh;
     height: 100svh;
+    min-height: 100vh;
     min-height: 100svh;
     padding-top: max(82px, env(safe-area-inset-top));
+    padding-bottom: clamp(30px, 7vh, 54px);
     padding-bottom: clamp(30px, 7svh, 54px);
   }
 
@@ -2048,11 +2078,14 @@ textarea:focus {
 
 @media (max-width: 860px) and (max-height: 520px) and (orientation: landscape) {
   .hero-section {
+    min-height: 220vh;
     min-height: 220svh;
   }
 
   .hero-stage {
+    height: 100vh;
     height: 100svh;
+    min-height: 100vh;
     min-height: 100svh;
     padding-top: 74px;
     padding-bottom: 22px;

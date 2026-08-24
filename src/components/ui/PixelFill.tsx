@@ -72,7 +72,9 @@ export function PixelFill() {
 
   useEffect(() => {
     const node = layer.current
-    if (!node) return
+    // sem ResizeObserver (Safari < 13.1) a grade não é construída e o botão
+    // fica sem o preenchimento por pixels — perda puramente cosmética
+    if (!node || typeof ResizeObserver === 'undefined') return
 
     let measured = ''
     const observer = new ResizeObserver(([entry]) => {

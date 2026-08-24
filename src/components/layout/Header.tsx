@@ -38,8 +38,17 @@ export function Header() {
     }
 
     closeOnDesktop()
-    media.addEventListener('change', closeOnDesktop)
-    return () => media.removeEventListener('change', closeOnDesktop)
+
+    // Safari abaixo do 14 só tem o addListener antigo. Chamar addEventListener
+    // lá joga um TypeError dentro do efeito, e sem tratamento isso derruba o
+    // Header — que é o primeiro componente da página.
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', closeOnDesktop)
+      return () => media.removeEventListener('change', closeOnDesktop)
+    }
+
+    media.addListener(closeOnDesktop)
+    return () => media.removeListener(closeOnDesktop)
   }, [])
 
   return (

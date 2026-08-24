@@ -30,6 +30,8 @@ import { projects } from '../../data/projects'
 import { services, type Service } from '../../data/services'
 import { team } from '../../data/team'
 import { Button } from '../ui/Button'
+import { ErrorBoundary } from '../ui/ErrorBoundary'
+import { HeroLogoFallback } from '../ui/HeroLogoFallback'
 import { PixelFill } from '../ui/PixelFill'
 import { SectionTitle } from '../ui/SectionTitle'
 import { Toast } from '../ui/Toast'
@@ -196,10 +198,16 @@ export function Hero() {
           </span>
         </div>
 
+        {/* A boundary fica FORA do Suspense: a rejeição do lazy é relançada
+            durante o render, e Suspense captura suspensão, não erro. Sem ela,
+            um chunk que não parseia (Safari antigo) ou que não baixa (rede
+            instável) derruba a página inteira, não só o 3D. */}
         {shouldLoadHero3D ? (
-          <Suspense fallback={null}>
-            <HeroLogo3D progress={progress} revealed={revealed} />
-          </Suspense>
+          <ErrorBoundary fallback={<HeroLogoFallback />}>
+            <Suspense fallback={null}>
+              <HeroLogo3D progress={progress} revealed={revealed} />
+            </Suspense>
+          </ErrorBoundary>
         ) : null}
 
         <HeroCopy revealed={revealed} onTypingChange={setTypingDone} />
