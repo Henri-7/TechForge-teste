@@ -113,7 +113,14 @@ export function Hero() {
           <span className="hero-brand-mark__node hero-brand-mark__node--first" />
           <span className="hero-brand-mark__node hero-brand-mark__node--second" />
           <span className="hero-brand-mark__logo">
-            <img src="/assets/techforge-horizontal.png" alt="" decoding="async" />
+            <img
+              src="/assets/techforge-mark.png"
+              alt=""
+              width={641}
+              height={416}
+              decoding="async"
+              fetchPriority="high"
+            />
           </span>
           <span className="hero-brand-mark__meta hero-brand-mark__meta--bottom">
             TECHFORGE SYSTEM
@@ -151,6 +158,8 @@ export function Positioning() {
  * saída não abre fresta antes de ele encolher.
  */
 const markPointer = (event: PointerEvent<HTMLElement>) => {
+  if (event.pointerType !== 'mouse') return
+
   const row = event.currentTarget
   const rect = row.getBoundingClientRect()
 
@@ -241,7 +250,14 @@ export function Projects() {
                 role="img"
               >
                 {project.image ? (
-                  <img src={project.image} alt="" loading="lazy" />
+                  <img
+                    src={project.image}
+                    alt=""
+                    width={960}
+                    height={600}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   <span>{String(index + 1).padStart(2, '0')}</span>
                 )}
@@ -297,7 +313,14 @@ export function About() {
     <section className="section section--about" id="sobre">
       <div className="container about-grid">
         <div className="about-media reveal">
-          <img src="/assets/techforge-lockup.png" alt="Logo TechForge com slogan Forjando o futuro digital" loading="lazy" />
+          <img
+            src="/assets/techforge-lockup.png"
+            alt="Logo TechForge com slogan Forjando o futuro digital"
+            width={1080}
+            height={1080}
+            loading="lazy"
+            decoding="async"
+          />
         </div>
         <div className="about-copy reveal">
           <p className="eyebrow">06 - Sobre</p>
@@ -331,7 +354,14 @@ export function Team() {
                 aria-label={member.image ? `Foto de ${member.name}` : `Integrante ${index + 1} pendente`}
               >
                 {member.image ? (
-                  <img src={member.image} alt="" loading="lazy" />
+                  <img
+                    src={member.image}
+                    alt=""
+                    width={460}
+                    height={460}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   <span>{String(index + 1).padStart(2, '0')}</span>
                 )}

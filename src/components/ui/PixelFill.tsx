@@ -69,33 +69,65 @@ function buildCells(width: number, height: number): Cell[] {
 export function PixelFill() {
   const layer = useRef<HTMLSpanElement>(null)
   const [cells, setCells] = useState<Cell[]>([])
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const node = layer.current
-    // sem ResizeObserver (Safari < 13.1) a grade não é construída e o botão
-    // fica sem o preenchimento por pixels — perda puramente cosmética
-    if (!node || typeof ResizeObserver === 'undefined') return
+    const trigger = node?.parentElement
+
+    // Em telas sem hover a grade nunca aparece, então não há motivo para criar
+    // centenas de nós nem manter ResizeObservers ativos.
+    if (!node || !trigger || !window.matchMedia('(hover: hover)').matches) return
 
     let measured = ''
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect
+    let active = false
+    let frame = 0
+    let observer: ResizeObserver | undefined
+
+    const update = (width: number, height: number) => {
       if (width <= 0 || height <= 0) return
 
-      // as células são absolutas e não alteram a caixa, mas medir só quando o
-      // tamanho muda de fato evita reconstruir a grade à toa
       const key = `${Math.round(width)}x${Math.round(height)}`
       if (key === measured) return
       measured = key
 
       setCells(buildCells(width, height))
-    })
+      if (!frame) frame = requestAnimationFrame(() => setReady(true))
+    }
 
-    observer.observe(node)
-    return () => observer.disconnect()
+    const activate = () => {
+      if (active) return
+      active = true
+
+      if (typeof ResizeObserver === 'undefined') {
+        const { width, height } = node.getBoundingClientRect()
+        update(width, height)
+        return
+      }
+
+      observer = new ResizeObserver(([entry]) => {
+        update(entry.contentRect.width, entry.contentRect.height)
+      })
+      observer.observe(node)
+    }
+
+    trigger.addEventListener('pointerenter', activate, { once: true, passive: true })
+    trigger.addEventListener('focusin', activate, { once: true })
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame)
+      observer?.disconnect()
+      trigger.removeEventListener('pointerenter', activate)
+      trigger.removeEventListener('focusin', activate)
+    }
   }, [])
 
   return (
-    <span className="pixel-fill" aria-hidden="true" ref={layer}>
+    <span
+      className={`pixel-fill ${ready ? 'pixel-fill--ready' : ''}`}
+      aria-hidden="true"
+      ref={layer}
+    >
       {cells.map((cell, index) => (
         <i
           key={index}

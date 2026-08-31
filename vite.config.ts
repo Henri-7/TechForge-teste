@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
           template: 'treemap',
           gzipSize: true,
           brotliSize: true,
-          open: true,
+          open: false,
         })
       : null,
   ],

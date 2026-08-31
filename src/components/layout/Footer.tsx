@@ -6,7 +6,14 @@ export function Footer() {
     <footer className="footer">
       <div className="container footer__grid">
         <div className="footer__brand">
-          <img src="/assets/techforge-horizontal.png" alt="TechForge" loading="lazy" />
+          <img
+            src="/assets/techforge-horizontal-optimized.png"
+            alt="TechForge"
+            width={840}
+            height={166}
+            loading="lazy"
+            decoding="async"
+          />
           <p>Forjando o futuro digital.</p>
         </div>
 

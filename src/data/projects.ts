@@ -13,7 +13,7 @@ export const projects: Project[] = [
     category: 'Website / Agendamento',
     description:
       'Site premium com agendamento online.',
-    image: '/assets/site-barbeiro-preview.png',
+    image: '/assets/site-barbeiro-preview.jpg',
     technologies: [],
     link: 'https://site-barbeiro-eight.vercel.app/',
   },
@@ -22,7 +22,7 @@ export const projects: Project[] = [
     category: 'Website / Sistema',
     description:
       'Compra, venda e emissão com milhas aéreas.',
-    image: '/assets/jimenez-milhas-preview.png',
+    image: '/assets/jimenez-milhas-preview.jpg',
     technologies: [],
     link: 'https://jimenez-milhas.vercel.app/',
   },
@@ -31,7 +31,7 @@ export const projects: Project[] = [
     category: 'Website / Plataforma',
     description:
       'Plataforma brasileira para troca gratuita de livros.',
-    image: '/assets/escambook-preview.png',
+    image: '/assets/escambook-preview.jpg',
     technologies: [],
     link: 'https://escambook.com.br/',
   },

@@ -54,7 +54,14 @@ export function Header() {
   return (
     <header className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
       <a className="brand" href="#inicio" aria-label="TechForge">
-        <img src="/assets/techforge-horizontal.png" alt="TechForge" />
+        <img
+          src="/assets/techforge-horizontal-optimized.png"
+          alt="TechForge"
+          width={840}
+          height={166}
+          decoding="async"
+          fetchPriority="high"
+        />
       </a>
 
       <nav className="desktop-nav" aria-label="Menu">
