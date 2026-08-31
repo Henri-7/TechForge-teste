@@ -689,7 +689,7 @@ label {
   .hero-brand-mark {
     top: clamp(125px, 18vh, 160px);
     right: auto;
-    left: 47%;
+    left: 50%;
     width: clamp(245px, 66vw, 310px);
     transform: translateX(-50%);
     animation-name: hero-brand-mark-in-mobile;
