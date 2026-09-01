@@ -51,6 +51,17 @@ export function Header() {
     return () => media.removeListener(closeOnDesktop)
   }, [])
 
+  useEffect(() => {
+    if (!isOpen) return
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [isOpen])
+
   return (
     <header className={`site-header ${isScrolled ? 'site-header--scrolled' : ''}`}>
       <a className="brand" href="#inicio" aria-label="TechForge">
@@ -88,7 +99,11 @@ export function Header() {
         {isOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
       </button>
 
-      <div className={`mobile-panel ${isOpen ? 'mobile-panel--open' : ''}`} id="mobile-menu">
+      <div
+        className={`mobile-panel ${isOpen ? 'mobile-panel--open' : ''}`}
+        id="mobile-menu"
+        aria-hidden={!isOpen}
+      >
         {navigation.map((item) => (
           <a key={item.href} href={item.href} onClick={() => setIsOpen(false)}>
             {item.label}
