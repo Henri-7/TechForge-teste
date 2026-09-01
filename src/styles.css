@@ -694,7 +694,7 @@ label {
     top: clamp(136px, 18vh, 164px);
     right: auto;
     left: 50%;
-    width: clamp(340px, 108vw, 420px);
+    width: clamp(300px, 84vw, 380px);
     transform: translateX(-50%);
     animation-name: hero-brand-mark-in-mobile;
   }
@@ -1845,14 +1845,6 @@ textarea:focus {
     overflow: clip;
   }
 
-  .hero-brand-mark {
-    top: clamp(136px, 18svh, 164px);
-    right: auto;
-    left: 50%;
-    width: clamp(350px, 102vw, 420px);
-    transform: translateX(-50%);
-  }
-
   .hero-copy,
   .hero-actions,
   .positioning__grid,
@@ -2057,11 +2049,6 @@ textarea:focus {
   .hero-stage {
     min-height: 760px;
     min-height: max(100svh, 760px);
-  }
-
-  .hero-brand-mark {
-    top: 138px;
-    width: min(360px, 108vw);
   }
 
   .hero-copy,
