@@ -691,10 +691,10 @@ label {
 
 @media (max-width: 860px) {
   .hero-brand-mark {
-    top: clamp(125px, 18vh, 160px);
+    top: clamp(136px, 18vh, 164px);
     right: auto;
     left: 50%;
-    width: clamp(245px, 66vw, 310px);
+    width: clamp(340px, 108vw, 420px);
     transform: translateX(-50%);
     animation-name: hero-brand-mark-in-mobile;
   }
@@ -1832,22 +1832,25 @@ textarea:focus {
   }
 
   .hero-section {
-    min-height: 680px;
-    min-height: max(100svh, 680px);
+    min-height: 740px;
+    min-height: max(100svh, 740px);
   }
 
   .hero-stage {
     height: auto;
-    min-height: 680px;
-    min-height: max(100svh, 680px);
+    min-height: 740px;
+    min-height: max(100svh, 740px);
     padding-top: calc(82px + env(safe-area-inset-top));
     padding-bottom: max(30px, calc(env(safe-area-inset-bottom) + 24px));
     overflow: clip;
   }
 
   .hero-brand-mark {
-    top: clamp(108px, 16svh, 132px);
-    width: clamp(205px, 55vw, 236px);
+    top: clamp(136px, 18svh, 164px);
+    right: auto;
+    left: 50%;
+    width: clamp(350px, 102vw, 420px);
+    transform: translateX(-50%);
   }
 
   .hero-copy,
@@ -2052,13 +2055,13 @@ textarea:focus {
 
   .hero-section,
   .hero-stage {
-    min-height: 700px;
-    min-height: max(100svh, 700px);
+    min-height: 760px;
+    min-height: max(100svh, 760px);
   }
 
   .hero-brand-mark {
-    top: 104px;
-    width: 196px;
+    top: 138px;
+    width: min(360px, 108vw);
   }
 
   .hero-copy,
